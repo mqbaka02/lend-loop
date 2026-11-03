@@ -6,6 +6,7 @@ import ConvexClientProvider from "./components/ConvexClientProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { Suspense } from "react";
+import Header from "./components/layout/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +52,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     },
                   }}
                 >
-                  {children}
+                  <div className="min-h-screen w-full">
+                    <Header />
+                    {children}
+                  </div>
                 </ConfigProvider>
               </AntdRegistry>
             </Suspense>
