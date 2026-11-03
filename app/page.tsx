@@ -16,10 +16,10 @@ export default function Home() {
   const sendMessage= useMutation(api.messages.send);
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="flex flex-col flex-1 items-center justify-center font-sans">
+      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 sm:items-start">
         <Show when="signed-out">
-          <h1 className="text-4xl font-bold text-black dark:text-white">
+          <h1 className="text-4xl font-bold">
             Please sign in to send messages
           </h1>
           <SignInButton mode="modal">
@@ -31,7 +31,7 @@ export default function Home() {
         </Show>
         <Show when="signed-in">
           <div className="flex items-center gap-4">
-            <h1 className="center">
+            <h1 className="center !text-foreground-1">
               Hello, {user?.firstName || user?.username}!
             </h1>
             <UserButton />
@@ -47,11 +47,6 @@ export default function Home() {
             }}
           >
             <TextArea onChange={(e)=> setMessage(e.target.value)} value={message} placeholder="Write a message..." />
-            {/* <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write a message..."
-            /> */}
             <Button type="primary" htmlType="submit">Send</Button>
           </form>
 
