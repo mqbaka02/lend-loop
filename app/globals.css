@@ -18,9 +18,9 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-pale-blue: var(--pale-blue);
-  --font-sans: var(--font-jakarta-sans);
+  --font-jakarta: var(--font-jakarta-sans);
   --font-mono: var(--font-geist-mono);
-  --font-inter-font: var(--font-inter);
+  --font-sans: var(--font-inter);
 }
 
 @media (prefers-color-scheme: dark) {

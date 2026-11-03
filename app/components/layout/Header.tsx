@@ -3,36 +3,43 @@
 import { ArrowRightOutlined, BellOutlined, DownOutlined, UnlockFilled } from "@ant-design/icons";
 import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Badge, Button } from "antd";
+import Container from "./Container";
 
 export default function Header () {
     return <div className="flex flex-col gap-0 w-full shadow-md">
         <div className="h-[5rem] w-full bg-background p-[1.25rem] px-[3rem] flex items-center">
-            <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
-                <div className="font-bold text-[1.25rem] text-primary w-[15rem]">LendLoop</div>
-                <div className="w-full grow flex gap-[.25rem]">
-                    <NavLink active href="#">Browse tools</NavLink>
-                    <Show when={"signed-in"}>
-                        <NavLink href="#">My activity</NavLink>
-                    </Show>
+            <Container>
+                <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
+                    <div className="font-bold text-[1.25rem] text-primary w-[15rem] font-jakarta">LendLoop</div>
+                    <div className="w-full grow flex gap-[.25rem]">
+                        <NavLink active href="#">Browse tools</NavLink>
+                        <Show when={"signed-in"}>
+                            <NavLink href="#">My activity</NavLink>
+                        </Show>
+                    </div>
+                    <UserWidget />
                 </div>
-                <UserWidget />
-            </div>
+            </Container>
         </div>
         <Show when="signed-out">
-            <div className="h-[2.375rem] bg-pale-blue w-full flex px-[3rem] items-center justify-between">
-                <div className="flex gap-[.25rem] items-center">
-                    <UnlockFilled className="!text-primary" />
-                    <div className="font-inter text-[.75rem] leading-[1rem]">Public Directory View</div>
-                </div>
-
-                <SignInButton mode="modal">
-                    <Button type="primary" shape="round" size="small" className="">
-                        <div className="flex gap-[.25rem] text-[.75rem] px-[.6rem]">
-                            Sign in to lend or borrow
-                            <ArrowRightOutlined />
+            <div className="h-[2.375rem] bg-pale-blue w-full flex px-[3rem]">
+                <Container>
+                    <div className="h-full flex items-center justify-between">
+                        <div className="flex gap-[.25rem] items-center">
+                            <UnlockFilled className="!text-primary" />
+                            <div className="font-inter text-[.75rem] leading-[1rem]">Public Directory View</div>
                         </div>
-                    </Button>
-                </SignInButton>
+
+                        <SignInButton mode="modal">
+                            <Button type="primary" shape="round" size="small" className="">
+                                <div className="flex gap-[.25rem] text-[.75rem] px-[.6rem]">
+                                    Sign in to lend or borrow
+                                    <ArrowRightOutlined />
+                                </div>
+                            </Button>
+                        </SignInButton>
+                    </div>
+                </Container>
             </div>
         </Show>
     </div>;
@@ -42,11 +49,11 @@ function NavLink({ href, children, active= false }: { href: string; children: Re
     return (<>
         {
             active ?
-            <div className="bg-pale-blue text-primary font-semibold text-[1rem] px-[1rem] py-[.5rem] leading-[1.5rem] rounded-md">
+            <div className="bg-pale-blue text-primary font-semibold text-[1rem] px-[1rem] py-[.5rem] leading-[1.5rem] rounded-md font-inter">
                 {children}
             </div>
             :
-            <a href={href} className={`bg-transparent text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem]`}>
+            <a href={href} className={`bg-transparent text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem] font-inter`}>
                 {children}
             </a>
         }
