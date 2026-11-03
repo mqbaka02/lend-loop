@@ -52,7 +52,7 @@ export default function Home() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Write a message..."
             /> */}
-            <button type="submit">Send</button>
+            <Button type="primary" htmlType="submit">Send</Button>
           </form>
 
           <h2>Messages from Convex:</h2>
