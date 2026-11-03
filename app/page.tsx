@@ -2,6 +2,8 @@
 
 import { api } from "@/convex/_generated/api";
 import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { Button } from "antd";
+import TextArea from "antd/es/input/TextArea";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 
@@ -21,10 +23,10 @@ export default function Home() {
             Please sign in to send messages
           </h1>
           <SignInButton mode="modal">
-            <button>Sign in</button>
+            <Button type="primary">Sign in</Button>
           </SignInButton>
           <SignUpButton mode="modal">
-            <button>Sign up</button>
+            <Button type="primary">Sign up</Button>
           </SignUpButton>
         </Show>
         <Show when="signed-in">
@@ -44,11 +46,12 @@ export default function Home() {
               setMessage("");
             }}
           >
-            <input
+            <TextArea onChange={(e)=> setMessage(e.target.value)} value={message} placeholder="Write a message..." />
+            {/* <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Write a message..."
-            />
+            /> */}
             <button type="submit">Send</button>
           </form>
 

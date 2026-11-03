@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "./components/ConvexClientProvider";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
           <ConvexClientProvider>
-            {children}
+            <AntdRegistry>
+              {children}
+            </AntdRegistry>
           </ConvexClientProvider>
         </ClerkProvider>
       </body>
