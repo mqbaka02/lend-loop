@@ -1,12 +1,12 @@
 "use client";
 
 import { ArrowRightOutlined, BellOutlined, DownOutlined, UnlockFilled } from "@ant-design/icons";
-import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { Show, SignInButton, SignUpButton, useClerk, UserButton, useUser } from "@clerk/nextjs";
 import { Badge, Button } from "antd";
 import Container from "./Container";
 
 export default function Header () {
-    return <div className="flex flex-col gap-0 w-full shadow-md">
+    return <div className="flex flex-col gap-0 w-full shadow-md sticky top-0 z-[999]">
         <div className="h-[5rem] w-full bg-background p-[1.25rem] px-[3rem] flex items-center">
             <Container>
                 <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
@@ -53,7 +53,7 @@ function NavLink({ href, children, active= false }: { href: string; children: Re
                 {children}
             </div>
             :
-            <a href={href} className={`bg-transparent text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem] font-inter`}>
+            <a href={href} className={`bg-transparent hover:bg-pale-blue/30 transition duration-300 rounded-md text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem] font-inter`}>
                 {children}
             </a>
         }
@@ -63,14 +63,30 @@ function NavLink({ href, children, active= false }: { href: string; children: Re
 function UserWidget () {
     const {user}= useUser();
 
+    const clickButton= ()=> {
+        const clerkUserButton= document.querySelector(".clerk-user-button button") as HTMLButtonElement;
+        if (clerkUserButton){
+            // console.log("clicked !");
+            clerkUserButton.click();
+        } else {
+            // console.error("Error!");
+        }
+    };
+
     return <div className="ml-auto flex gap-[.20rem] h-full">
         <Show when={"signed-in"}>
             <div className="flex items-center h-full gap-[1rem]">
                 <Badge dot>
                     <BellOutlined className="w-[1.2rem]" style={{ fontSize: 24 }} />
                 </Badge>
-                <div className="bg-white px-[.25rem] pr-[1.076rem] h-full rounded-full flex items-center gap-[.5rem]">
-                    <UserButton />
+                <div className="bg-white px-[.25rem] pr-[1.076rem] h-full rounded-full flex items-center gap-[.5rem] cursor-pointer" onClick={clickButton}>
+                    <UserButton 
+                        appearance={{
+                        elements: {
+                            rootBox: "clerk-user-button"
+                        }
+                        }}
+                    />
                     <div className="flex flex-col gap-0">
                         <div className="leading-[1rem] text-[.75rem] font-semibold text-foreground-1 first-letter:uppercase">
                             {user?.firstName || user?.username}

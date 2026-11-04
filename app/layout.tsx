@@ -52,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     },
                   }}
                 >
-                  <div className="min-h-screen w-full">
+                  <div className="min-h-screen w-full relative">
                     <Header />
                     {children}
                   </div>
