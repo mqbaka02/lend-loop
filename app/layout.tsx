@@ -26,6 +26,8 @@ const inter= Inter({
 const jakartaSans= Plus_Jakarta_Sans({
   variable: "--font-jakarta-sans",
   subsets: ["latin"],
+  weight: ['400', '600', '700', '800'],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
