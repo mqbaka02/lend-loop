@@ -7,7 +7,7 @@ import Container from "./Container";
 
 export default function Header () {
     return <div className="flex flex-col gap-0 w-full shadow-md sticky top-0 z-[999]">
-        <div className="h-[5rem] w-full bg-background p-[1.25rem] px-[3rem] flex items-center">
+        <div className="h-[5rem] w-full bg-background py-[1.25rem] flex items-center">
             <Container>
                 <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
                     <div className="font-bold text-[1.25rem] text-primary w-[15rem] font-jakarta">LendLoop</div>
@@ -22,7 +22,7 @@ export default function Header () {
             </Container>
         </div>
         <Show when="signed-out">
-            <div className="h-[2.375rem] bg-pale-blue w-full flex px-[3rem]">
+            <div className="h-[2.375rem] bg-pale-blue w-full flex">
                 <Container>
                     <div className="h-full flex items-center justify-between">
                         <div className="flex gap-[.25rem] items-center">
