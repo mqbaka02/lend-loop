@@ -7,6 +7,7 @@ import TextArea from "antd/es/input/TextArea";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import Container from "./components/layout/Container";
+import { ArrowDownOutlined, SwapOutlined, UserOutlined } from "@ant-design/icons";
 
 export default function Home() {
 
@@ -18,7 +19,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
-      <main className="flex flex-1 w-full flex-col gap-0 items-center justify-between py-32 px-16 sm:items-start">
+      <main className="flex flex-1 w-full flex-col gap-0">
         <Hero/>
         {/* <Show when="signed-out">
           <h1 className="text-4xl font-bold">
@@ -74,7 +75,36 @@ function Hero () {
           </div>
           <div className="flex flex-col gap-[.25rem] w-full">
             <div className="text-[.875rem] text-primary font-semibold leading-[1.25rem] tracking-[0.04rem]">LENDLOOP NEIGHBORHOOD NETWORK</div>
-            <h1 className="text-[3rem] text-foreground-1 font-bold leading-[125%] font-jakarta">Borrow what you need.<br/><span className="italic text-primary">Lend what you don't.</span></h1>
+            <div className="flex flex-col gap-[1rem]">
+              <h1 className="text-[3rem] text-foreground-1 font-bold leading-[125%] font-jakarta">Borrow what you need.<br/><span className="italic text-primary">Lend what you don't.</span></h1>
+              <p className="tracking-0 leading-[155.5%] text-[1.125rem] text-foreground">Why buy a miter saw or pressure washer for a single weekend? LendLoop connects neighbors to share everyday gear, cut household consumption, and build trust street by street.</p>
+              <div className="flex gap-[1rem]">
+                <Show when={"signed-in"}>
+                  <Button type="primary" size="large">
+                    <div className="flex gap-[.5rem] text-[.875rem] font-semibold px-[.8rem] py-[.75rem] leading-[1.25rem]">
+                      <SwapOutlined />
+                      Lend or Borrow
+                    </div>
+                  </Button>
+                </Show>
+                <Show when={"signed-out"}>
+                  <SignInButton mode="modal">
+                    <Button type="primary" size="large">
+                      <div className="flex gap-[.5rem] text-[.875rem] font-semibold px-[.8rem] py-[.75rem] leading-[1.25rem]">
+                        <UserOutlined />
+                        Sign in with Clerk to Lend or Borrow
+                      </div>
+                    </Button>
+                  </SignInButton>
+                </Show>
+                <Button color="default" size="large">
+                  <div className="flex gap-[.5rem] text-[.875rem] font-semibold px-[.8rem] py-[.75rem] leading-[1.25rem]">
+                    Explore catalog
+                    <ArrowDownOutlined />
+                  </div>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex-[38.2] w-full flex flex-col gap-[1rem]"></div>

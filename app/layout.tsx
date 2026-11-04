@@ -51,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   theme={{
                     token: {
                       colorPrimary: "#004c22",
+                      colorSuccess: "#F2F3FF",
                     },
                   }}
                 >
