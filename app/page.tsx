@@ -9,6 +9,7 @@ import { useState } from "react";
 import Container from "./components/layout/Container";
 import { ArrowDownOutlined, CiOutlined, SwapOutlined, UserOutlined } from "@ant-design/icons";
 import Image from "next/image";
+import ToolsList from "./components/ToolsList";
 
 export default function Home() {
 
@@ -22,6 +23,7 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
       <main className="flex flex-1 w-full flex-col gap-0">
         <Hero/>
+        <ToolsList />
         {/* <ToolTest /> */}
         {/* <Show when="signed-out">
           <h1 className="text-4xl font-bold">
@@ -112,7 +114,7 @@ function Hero () {
         <div className="flex-[38.2] w-full flex flex-col gap-[1rem]">
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-full relative rounded-xl overflow-hidden">
-              <Image src={"/hero_.jpg"} alt="Tools" width={360} height={480} className="w-full" />
+              <Image src={"/hero_.jpg"} alt="Tools" width={480} height={360} className="w-full" />
               <div className="absolute top-0 bottom-0 right-0 left-0 z-[10] bg-gradient-to-b from-transparent to-black/80 flex items-end justify-center gap-[1.5rem] pb-[1.25rem]">
                 <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
                 <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />

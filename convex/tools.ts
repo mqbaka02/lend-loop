@@ -74,6 +74,53 @@ export const createTool= mutation({
     },
 });
 
+export const getTools= query({
+    args: {},
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+        
+        const tools= await context.db
+            .query("tools")
+            .withIndex("by_id").collect();
+        
+        
+        const now= Date.now();
+
+        const availableTools= await Promise.all(
+            tools.map(async (tool)=> {
+                const loans= await context.db
+                    .query("loans")
+                    .withIndex("by_tool", (q)=> q.eq("toolId", tool._id))
+                    .collect();
+
+                //Check if the tool is still being borrowed by someone wich means the status of one of the loans is "approved" and the current date (`now`) is between the start and the end date
+                const isBorrowed= loans.some(loan=> 
+                    loan.status === "approved" &&
+                    loan.endDate >= now &&
+                    loan.startDate <= now
+                );
+
+                const category= await context.db.get("categories", tool.category);
+                const owner= await context.db.get("users", tool.ownerId);
+                return {
+                    name: tool.name,
+                    category: category?.name ?? "No category",
+                    owner: owner,
+                    condition: tool.condition,
+                    desc: tool.description,
+                    image: tool.imageId,
+                    date: tool._creationTime,
+                    isAvailable: !isBorrowed,
+                    id: tool._id,
+                };
+            })
+        );
+        
+        return availableTools;
+    },
+});
+
 export const seedTools = internalMutation({
   args: {},
   handler: async (ctx) => {
