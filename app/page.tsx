@@ -4,12 +4,12 @@ import { api } from "@/convex/_generated/api";
 import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { useMutation, useQuery } from "convex/react";
+import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import Container from "./components/layout/Container";
 import { ArrowDownOutlined, CiOutlined, SwapOutlined, UserOutlined } from "@ant-design/icons";
 import Image from "next/image";
-import ToolsList from "./components/ToolsList";
+import ToolsList, { ToolsListPublic } from "./components/ToolsList";
 
 export default function Home() {
 
@@ -23,7 +23,12 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
       <main className="flex flex-1 w-full flex-col gap-0">
         <Hero/>
-        <ToolsList />
+        <Authenticated>
+          <ToolsList />
+        </Authenticated>
+        <Unauthenticated>
+          <ToolsListPublic />
+        </Unauthenticated>
         {/* <ToolTest /> */}
         {/* <Show when="signed-out">
           <h1 className="text-4xl font-bold">

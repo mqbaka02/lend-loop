@@ -33,6 +33,8 @@ export const getPublicTools= query({
                 return {
                     name: tool.name,
                     category: category?.name ?? "No category",
+                    id: tool._id,
+                    image: tool.imageId,
                 };
             })
         );
