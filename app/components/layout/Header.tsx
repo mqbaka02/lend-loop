@@ -4,13 +4,14 @@ import { ArrowRightOutlined, BellOutlined, DownOutlined, UnlockFilled } from "@a
 import { Show, SignInButton, SignUpButton, useClerk, UserButton, useUser } from "@clerk/nextjs";
 import { Badge, Button } from "antd";
 import Container from "./Container";
+import Logo from "./Logo";
 
 export default function Header () {
     return <div className="flex flex-col gap-0 w-full shadow-md sticky top-0 z-[999]">
         <div className="h-[5rem] w-full bg-background py-[1.25rem] flex items-center">
             <Container>
                 <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
-                    <div className="font-bold text-[1.25rem] text-primary w-[15rem] font-jakarta">LendLoop</div>
+                    <Logo />
                     <div className="w-full grow flex gap-[.25rem]">
                         <NavLink active href="#">Browse tools</NavLink>
                         <Show when={"signed-in"}>

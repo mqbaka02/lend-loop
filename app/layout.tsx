@@ -7,6 +7,7 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { Suspense } from "react";
 import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,9 +56,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     },
                   }}
                 >
-                  <div className="min-h-screen w-full relative">
+                  <div className="min-h-screen flex flex-col gap-0 w-full relative">
                     <Header />
                     {children}
+                    <Footer />
                   </div>
                 </ConfigProvider>
               </AntdRegistry>

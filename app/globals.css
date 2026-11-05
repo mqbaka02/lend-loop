@@ -9,6 +9,7 @@
   --primary: #004c22;
   --secondary: #92F5A4;
   --pale-blue: #E2E7FF;
+  --light-blue: #F2F3FF;
 }
 
 @theme inline {
@@ -18,6 +19,7 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-pale-blue: var(--pale-blue);
+  --color-light-blue: var(--light-blue);
   --font-jakarta: var(--font-jakarta-sans);
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-inter);
@@ -31,6 +33,7 @@
     --primary: #004c22;
     --secondary: #92F5A4;
     --pale-blue: #E2E7FF;
+    --light-blue: #F2F3FF;
   }
 }
 
