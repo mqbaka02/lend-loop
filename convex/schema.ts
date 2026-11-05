@@ -27,6 +27,12 @@ export default defineSchema({
         category: v.id("categories"),
         description: v.optional(v.string()),
         imageId: v.optional(v.id("_storage")),
+        condition: (v.union(
+            v.literal("new"),
+            v.literal("good"),
+            v.literal("fair"),
+            v.literal("poor")
+        )),
     })
     .index("by_owner", ["ownerId"])
     .index("by_category", ["category"]),

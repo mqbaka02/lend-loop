@@ -2,6 +2,9 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./lib/auth";
 
+import { internalMutation } from "./_generated/server";
+import { faker } from "@faker-js/faker";
+
 export const getPublicTools= query({
     args: {},
 
@@ -44,6 +47,12 @@ export const createTool= mutation({
         name: v.string(),
         category: v.id("categories"),
         description: v.optional(v.string()),
+        condition: v.union(
+            v.literal("new"),
+            v.literal("good"),
+            v.literal("fair"),
+            v.literal("poor")
+        )
     },
 
     handler: async (context, args)=> {
@@ -60,6 +69,53 @@ export const createTool= mutation({
             name,
             category: args.category,
             description: args.description,
+            condition: args.condition
         });
     },
+});
+
+export const seedTools = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+
+    //Ditch this code if you don't care about repetitive tool names
+    // const existingTools = await ctx.db.query("tools").take(1);
+
+    // if (existingTools.length > 0) {
+    //   throw new Error("Tools table is not empty. Aborting seed.");
+    // }
+
+    const users = await ctx.db.query("users").collect();
+    const categories = await ctx.db.query("categories").collect();
+
+    if (users.length === 0) {
+      throw new Error("No users found. Sign in first.");
+    }
+
+    if (categories.length === 0) {
+      throw new Error("No categories found. Seed categories first.");
+    }
+
+
+    const conditions = ["new", "good", "fair", "poor"] as const;
+
+    for (let i= 0; i< 50; i++) {
+      const owner = faker.helpers.arrayElement(users);
+      const category = faker.helpers.arrayElement(categories);
+
+      await ctx.db.insert("tools", {
+        ownerId: owner._id,
+        name: faker.commerce.product(),
+        category: category._id,
+        condition: faker.helpers.arrayElement(conditions),
+        description: faker.lorem.sentences({ min: 1, max: 2 }),
+      });
+    }
+
+    return {
+      inserted: 50,
+      owners: users.length,
+      categories: categories.length,
+    };
+  },
 });
