@@ -1,3 +1,8 @@
+/**
+ * This is a quick text to understand and test the functionalties of Convex,
+ * This has nothing to do with the actual LendLoop project
+ */
+
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
