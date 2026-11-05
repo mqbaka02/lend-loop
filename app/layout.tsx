@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import ConvexClientProvider from "./components/ConvexClientProvider";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ConfigProvider } from "antd";
-import { Suspense } from "react";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import Providers from "./providers/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,28 +40,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>
-          <ConvexClientProvider>
-            <Suspense fallback={null}>
-              <AntdRegistry>
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      colorPrimary: "#004c22",
-                      colorSuccess: "#F2F3FF",
-                    },
-                  }}
-                >
-                  <div className="min-h-screen flex flex-col gap-0 w-full relative">
-                    <Header />
-                    {children}
-                    <Footer />
-                  </div>
-                </ConfigProvider>
-              </AntdRegistry>
-            </Suspense>
-          </ConvexClientProvider>
-        </ClerkProvider>
+        <Providers>
+          <div className="min-h-screen flex flex-col gap-0 w-full relative">
+            <Header />
+            {children}
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );
