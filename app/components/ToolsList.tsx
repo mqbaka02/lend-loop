@@ -1,16 +1,16 @@
 "use client";
 
-import Search from "antd/es/input/Search";
-import Container from "./layout/Container";
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Tool } from "../types";
-import Image from "next/image";
-import { EyeInvisibleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button } from "antd";
-import { SignInButton } from "@clerk/nextjs";
-import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
+import { EyeInvisibleOutlined, LoadingOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import { SignInButton } from "@clerk/nextjs";
+import { Button, Result, Skeleton, Spin } from "antd";
+import Search from "antd/es/input/Search";
+import { useConvexAuth, useQuery } from "convex/react";
+import Image from "next/image";
+import { useState } from "react";
+import { Tool } from "../types";
+import Container from "./layout/Container";
 
 export default function ToolsList () {
 
@@ -25,15 +25,26 @@ export default function ToolsList () {
         <Container>
             <div className="flex flex-col gap-[1.5rem]">
                 <CategorySelector activeCategory={activeCategory} selectCategory={clickHandler_} />
-                <Authenticated >
-                    <ToolslistPrivate activeCategory={activeCategory} />
-                </Authenticated>
-                <Unauthenticated>
-                    <ToolsListPublic activeCategory={activeCategory} />
-                </Unauthenticated>
+                <AuthCheckedToolsList activeCategory={activeCategory} />
             </div>
         </Container>
     </div>;
+};
+
+const AuthCheckedToolsList= ({activeCategory}: {activeCategory: string})=> {
+    const {isLoading, isAuthenticated}= useConvexAuth();
+
+    if (isLoading) {
+        return <div className="w-full">
+            <Result
+                status={"info"}
+                title="Waiting for Convex authentication"
+                icon={<Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />}
+            />
+        </div>;
+    }
+
+    return isAuthenticated ? <ToolslistPrivate activeCategory={activeCategory} /> : <ToolsListPublic activeCategory={activeCategory} />;
 };
 
 const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
@@ -41,6 +52,14 @@ const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
 
     return <div className="flex flex-wrap gap-[1.5rem]">
         {
+            allTools=== undefined ?
+            <>
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+            </>
+            :
             allTools?.map(tool=> <ToolCard key={tool.id} tool={tool} />)
         }
     </div>;
@@ -51,6 +70,14 @@ function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
 
     return <div className="flex flex-wrap gap-[1.5rem]">
         {
+            allTools=== undefined ?
+            <>
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+                <ToolCardSkeleton />
+            </>
+            :
             allTools?.map(tool=> <ToolCardPublic key={tool.id} tool={tool} />)
         }
     </div>;
@@ -59,6 +86,7 @@ function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
 const CategorySelector= ({selectCategory, activeCategory}: {selectCategory: (id: string)=> void, activeCategory: string})=> {
 
     const categories= useQuery(api.categories.getCategories);
+
     return <div className="flex flex-col gap-[.25rem]">
         <h3 className="text-foreground-1 text-[2.25rem] font-bold font-jakarta">Community Tool Inventory</h3>
         <p className="text-foreground">Browse tools currently registered across nearby local clusters.</p>
@@ -66,6 +94,14 @@ const CategorySelector= ({selectCategory, activeCategory}: {selectCategory: (id:
         <div className="flex flex-wrap gap-[.25rem]">
             <CategoryBullet name="All categories" clickHandler={() => { selectCategory("") }} active={activeCategory === ""} />
             {
+                categories=== undefined ?
+                <>
+                <Skeleton.Button active size="middle" shape="round" />
+                <Skeleton.Button active size="middle" shape="round" />
+                <Skeleton.Button active size="middle" shape="round" />
+                <Skeleton.Button active size="middle" shape="round" />
+                </>
+                :
                 categories?.map(category => <CategoryBullet name={category.name} clickHandler={() => { selectCategory(category.id) }} key={category.id} active={activeCategory === category.id} />)
             }
         </div>
@@ -100,6 +136,13 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             Owner: {tool.owner?.clerkId}
         </div>
         <Button type="primary" className="w-full">Borrow</Button>
+    </div>;
+};
+
+const ToolCardSkeleton = () => {
+    return <div className="bg-white rounded-md p-[1rem] flex flex-col gap-[.5rem] min-w-[20rem] max-w-[25rem] grow w-full">
+        <Skeleton.Image active style={{width: "100%", height: 200}} />
+        <Skeleton active />
     </div>;
 };
 
