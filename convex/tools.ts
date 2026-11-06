@@ -9,39 +9,29 @@ import { paginationOptsValidator } from "convex/server";
 export const getPublicTools= query({
     args: {
         category: v.optional(v.id("categories")),
-        paginationOptions: paginationOptsValidator,
+        paginationOpts: paginationOptsValidator,
     },
 
     handler: async (context, args)=> {
-        const toolsQuery= context.db.query("tools");
-
-
-        let tools;
         const category= args.category;
-        if (category!== undefined){
-            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).order("desc").collect();
-        }else {
-            tools= await toolsQuery.collect();
-        }
 
-        const now= Date.now();
+        // Availability is part of the index range, so unavailable tools are never read
+        const toolsQuery= category !== undefined
+            ? context.db
+                .query("tools")
+                .withIndex("by_category_and_available", (q)=>
+                    q.eq("category", category).eq("isAvailable", true)
+                )
+            : context.db
+                .query("tools")
+                .withIndex("by_available", (q)=> q.eq("isAvailable", true));
 
-        const availableTools= await Promise.all(
-            tools.map(async (tool)=> {
-                const loans= await context.db
-                    .query("loans")
-                    .withIndex("by_tool", (q)=> q.eq("toolId", tool._id))
-                    .collect();
+        const result= await toolsQuery
+            .order("desc")
+            .paginate(args.paginationOpts);
 
-                //Check if the tool is still being borrowed by someone wich means the status of one of the loans is "approved" and the current date (`now`) is between the start and the end date
-                const isBorrowed= loans.some(loan=> 
-                    loan.status === "approved" &&
-                    loan.endDate >= now &&
-                    loan.startDate <= now
-                );
-
-                if (isBorrowed) return null;
-
+        const page= await Promise.all(
+            result.page.map(async (tool)=> {
                 const category= await context.db.get("categories", tool.category);
                 return {
                     name: tool.name,
@@ -52,46 +42,32 @@ export const getPublicTools= query({
             })
         );
 
-        //Only return the tools that are not currently borrowed
-        return availableTools.filter((tool)=> tool!== null);
+        return { ...result, page };
     },
 });
 
 export const getTools= query({
     args: {
         category: v.optional(v.id("categories")),
-        paginationOptions: paginationOptsValidator,
+        paginationOpts: paginationOptsValidator,
     },
 
     handler: async (context, args)=> {
         const user= await getCurrentUser(context);
 
-        const toolsQuery= context.db.query("tools");
-
-        let tools;
         const category= args.category;
-        if (category!== undefined){
-            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).collect();
-        }else {
-            tools= await toolsQuery.collect();
-        }   
-        
-        const now= Date.now();
+        const toolsQuery= category !== undefined
+            ? context.db
+                .query("tools")
+                .withIndex("by_category", (q)=> q.eq("category", category))
+            : context.db.query("tools");
 
-        const availableTools= await Promise.all(
-            tools.map(async (tool)=> {
-                const loans= await context.db
-                    .query("loans")
-                    .withIndex("by_tool", (q)=> q.eq("toolId", tool._id))
-                    .collect();
+        const result= await toolsQuery
+            .order("desc")
+            .paginate(args.paginationOpts);
 
-                //Check if the tool is still being borrowed by someone wich means the status of one of the loans is "approved" and the current date (`now`) is between the start and the end date
-                const isBorrowed= loans.some(loan=> 
-                    loan.status === "approved" &&
-                    loan.endDate >= now &&
-                    loan.startDate <= now
-                );
-
+        const page= await Promise.all(
+            result.page.map(async (tool)=> {
                 const category= await context.db.get("categories", tool.category);
                 const owner= await context.db.get("users", tool.ownerId);
                 return {
@@ -102,13 +78,13 @@ export const getTools= query({
                     desc: tool.description,
                     image: tool.imageId,
                     date: tool._creationTime,
-                    isAvailable: !isBorrowed,
+                    isAvailable: tool.isAvailable,
                     id: tool._id,
                 };
             })
         );
-        
-        return availableTools;
+
+        return { ...result, page };
     },
 });
 
@@ -139,39 +115,40 @@ export const createTool= mutation({
             name,
             category: args.category,
             description: args.description,
-            condition: args.condition
+            condition: args.condition,
+            isAvailable: true,
         });
     },
 });
 
-export const seedTools = internalMutation({
+export const seedTools= internalMutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx)=> {
 
     //Ditch this code if you don't care about repetitive tool names
-    // const existingTools = await ctx.db.query("tools").take(1);
+    // const existingTools= await ctx.db.query("tools").take(1);
 
     // if (existingTools.length > 0) {
     //   throw new Error("Tools table is not empty. Aborting seed.");
     // }
 
-    const users = await ctx.db.query("users").collect();
-    const categories = await ctx.db.query("categories").collect();
+    const users= await ctx.db.query("users").collect();
+    const categories= await ctx.db.query("categories").collect();
 
-    if (users.length === 0) {
+    if (users.length=== 0) {
       throw new Error("No users found. Sign in first.");
     }
 
-    if (categories.length === 0) {
+    if (categories.length=== 0) {
       throw new Error("No categories found. Seed categories first.");
     }
 
 
-    const conditions = ["new", "good", "fair", "poor"] as const;
+    const conditions= ["new", "good", "fair", "poor"] as const;
 
     for (let i= 0; i< 50; i++) {
-      const owner = faker.helpers.arrayElement(users);
-      const category = faker.helpers.arrayElement(categories);
+      const owner= faker.helpers.arrayElement(users);
+      const category= faker.helpers.arrayElement(categories);
 
       await ctx.db.insert("tools", {
         ownerId: owner._id,
@@ -179,6 +156,7 @@ export const seedTools = internalMutation({
         category: category._id,
         condition: faker.helpers.arrayElement(conditions),
         description: faker.lorem.sentences({ min: 1, max: 2 }),
+        isAvailable: true,
       });
     }
 
@@ -208,3 +186,39 @@ export const migrateFromNoIsAvailableToIsAvailable= internalMutation({
         });
     },
 });
+
+/**
+ * This function is for refreshing the availability of each tool,
+ * This is meant to be called from a scheduler mostly
+ */
+export const refreshAvailability= internalMutation({
+    args: { toolId: v.id("tools") },
+    handler: async (context, { toolId })=> {
+
+        const now= Date.now();
+
+        const loans= await context.db
+            .query("loans")
+            .withIndex("by_tool", (q)=> q.eq("toolId", toolId))
+            .collect();
+
+        const isBorrowed= loans.some(
+            (loan)=>
+                loan.status=== "approved" &&
+                loan.endDate >= now &&
+                loan.startDate <= now
+        );
+
+        await context.db.patch(toolId, { isAvailable: !isBorrowed });
+    },
+});
+
+/**
+ * VERY IMPORTANT FOR LATER
+ * Add those code in any function that can approve/cancel/return a loan
+ * Basically any function that should logically change the availabiility of a tool
+
+await context.scheduler.runAfter(0, internal.tools.refreshAvailability, { toolId });
+await context.scheduler.runAt(loan.startDate, internal.tools.refreshAvailability, { toolId });
+await context.scheduler.runAt(loan.endDate + 1, internal.tools.refreshAvailability, { toolId });
+*/
