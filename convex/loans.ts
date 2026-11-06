@@ -68,24 +68,31 @@ export const getMyRequests= query({
         const user= await getCurrentUser(context);
 
         const loans= await context.db.query("loans").withIndex("by_borrower", (q)=> q.eq("borrowerId", user._id)).collect();
-        const enrichedLoans= loans.map(async loan=> {
-            //find the tool
-            const theTool= await context.db.get("tools", loan.toolId);
-            if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
+        const enrichedLoans = await Promise.all(
+            loans.map(async loan => {
+                //find the tool
+                const theTool = await context.db.get("tools", loan.toolId);
+                if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
 
-            //find the borrower name
-            const theOwner= await context.db.get("users", loan.ownerId);
-            if (!theOwner) return null; // just checking to avoid Ts errors, those should always exist
+                //find the borrower name
+                const theOwner = await context.db.get("users", loan.ownerId);
+                if (!theOwner) return null; // just checking to avoid Ts errors, those should always exist
 
-            //find the category??
-            const theCateg= await context.db.get("categories", theTool?.category);
-            return {
-                ...loan,
-                tool: theTool,
-                owner: theOwner,
-                category: theCateg
-            };
-        });
+                //find the category??
+                const theCateg = await context.db.get("categories", theTool?.category);
+                return {
+                    ...loan,
+                    tool: theTool,
+                    owner: theOwner? {
+                        name: theOwner.name,
+                        username: theOwner.username,
+                        imageUrl: theOwner.imageUrl,
+                        isTrusted: theOwner.isTrusted,
+                    }: null,
+                    category: theCateg
+                };
+            })
+        );
 
         return enrichedLoans.filter(e=> e!==null);
     },
@@ -101,24 +108,32 @@ export const getIncomingRequests= query({
         const user= await getCurrentUser(context);
 
         const loans= await context.db.query("loans").withIndex("by_owner", (q)=> q.eq("ownerId", user._id)).collect();
-        const enrichedLoans= loans.map(async loan=> {
-            //find the tool
-            const theTool= await context.db.get("tools", loan.toolId);
-            if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
+        const enrichedLoans = await Promise.all(
+            loans.map(async loan => {
+                //find the tool
+                const theTool = await context.db.get("tools", loan.toolId);
+                if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
 
-            //find the borrower name
-            const theBorrower= await context.db.get("users", loan.borrowerId);
-            if (!theBorrower) return null; // just checking to avoid Ts errors, those should always exist
+                //find the borrower name
+                const theBorrower = await context.db.get("users", loan.borrowerId);
+                if (!theBorrower) return null; // just checking to avoid Ts errors, those should always exist
 
-            //find the category??
-            const theCateg= await context.db.get("categories", theTool?.category);
-            return {
-                ...loan,
-                tool: theTool,
-                borrower: theBorrower,
-                category: theCateg
-            };
-        });
+                //find the category??
+                const theCateg = await context.db.get("categories", theTool?.category);
+                return {
+                    ...loan,
+                    tool: theTool,
+                    borrower: theBorrower? {
+                        clerkUpdatedAt: theBorrower.clerkUpdatedAt,
+                        username: theBorrower.username,
+                        name: theBorrower.name,
+                        imageUrl: theBorrower.imageUrl,
+                        isTrusted: theBorrower.isTrusted,
+                    }: null,
+                    category: theCateg
+                };
+            })
+        );
 
         return enrichedLoans.filter(e=> e!==null);
     },
@@ -200,7 +215,7 @@ export const markAsReturned= mutation({
         const result= await context.db.patch("loans", args.loanId, {
             status: "returned"
         });
-        
+
         //Refresh tool availability
         await context.scheduler.runAfter(0, internal.tools.refreshAvailability, { toolId: theTool._id });
         // await context.scheduler.runAt(theLoan.startDate, internal.tools.refreshAvailability, { toolId: theTool._id });

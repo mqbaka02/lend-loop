@@ -75,7 +75,7 @@ export const getTools= query({
                     category: category?.name ?? "No category",
                     owner: owner ? {
                         isTrusted: owner.isTrusted,
-                        clerkId: owner.clerkId,
+                        // clerkId: owner.clerkId,
                         name: owner.name,
                         imageUrl: owner.imageUrl,
                         username: owner.username
@@ -185,11 +185,13 @@ export const migrateFromNoIsAvailableToIsAvailable= internalMutation({
     handler: async (context, args)=> {
         const allTools= await context.db.query("tools").collect();
 
-        allTools.forEach(async tool=> {
-            await context.db.patch("tools", tool._id, {
-                isAvailable: true,
-            });
-        });
+        await Promise.all(
+            allTools.map(tool =>
+                context.db.patch(tool._id, {
+                    isAvailable: true,
+                })
+            )
+        );
     },
 });
 
@@ -214,6 +216,9 @@ export const refreshAvailability= internalMutation({
                 loan.endDate >= now &&
                 loan.startDate <= now
         );
+
+        const tool = await context.db.get("tools", toolId);
+        if (!tool) return;
 
         await context.db.patch(toolId, { isAvailable: !isBorrowed });
     },

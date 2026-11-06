@@ -1,7 +1,7 @@
 import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
 import schema from "./schema";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const modules = import.meta.glob("./**/*.ts");
 
@@ -171,26 +171,26 @@ describe("createLoanRequest", () => {
     });
 });
 
-describe("updateLoanStatus", () => {
-    async function createPendingLoan(t: ReturnType<typeof convexTest>) {
-        const { ownerId, borrowerId, toolId } = await createFixture(t);
+async function createPendingLoan(t: ReturnType<typeof convexTest>) {
+    const { ownerId, borrowerId, toolId } = await createFixture(t);
 
-        const startDate = Date.now() + 86_400_000;
-        const endDate = startDate + 3 * 86_400_000;
+    const startDate = Date.now() + 86_400_000;
+    const endDate = startDate + 3 * 86_400_000;
 
-        const loanId = await t.run(async (ctx) => {
-            return await ctx.db.insert("loans", {
-                toolId,
-                ownerId,
-                borrowerId,
-                startDate,
-                endDate,
-                status: "pending",
-            });
+    const loanId = await t.run(async (ctx) => {
+        return await ctx.db.insert("loans", {
+            toolId,
+            ownerId,
+            borrowerId,
+            startDate,
+            endDate,
+            status: "pending",
         });
+    });
 
-        return { loanId, ownerId, borrowerId, toolId, startDate, endDate };
-    }
+    return { loanId, ownerId, borrowerId, toolId, startDate, endDate };
+}
+describe("updateLoanStatus", () => {
 
     it("allows the owner to approve a pending request", async () => {
         const t = convexTest(schema, modules);
@@ -402,5 +402,300 @@ describe("markAsReturned", () => {
                 { loanId },
             ),
         ).rejects.toThrow("Only approved loans can be marked as returned!");
+    });
+});
+
+describe("refreshAvailability", () => {
+    async function createLoan(
+        t: ReturnType<typeof convexTest>,
+        status: "pending" | "approved" | "declined" | "returned",
+        startDate: number,
+        endDate: number,
+    ) {
+        const { ownerId, borrowerId, toolId } = await createFixture(t);
+
+        await t.run(async (ctx) => {
+            await ctx.db.insert("loans", {
+                toolId,
+                ownerId,
+                borrowerId,
+                startDate,
+                endDate,
+                status,
+            });
+        });
+
+        return toolId;
+    }
+
+    it("marks a tool unavailable when it has an active approved loan", async () => {
+        const t = convexTest(schema, modules);
+        const now = Date.now();
+
+        const toolId = await createLoan(
+            t,
+            "approved",
+            now - 86_400_000,
+            now + 86_400_000,
+        );
+
+        await t.mutation(internal.tools.refreshAvailability, { toolId });
+
+        const tool = await t.run(async (ctx) => ctx.db.get("tools", toolId));
+
+        expect(tool?.isAvailable).toBe(false);
+    });
+
+    it("keeps a tool available when its approved loan is in the future", async () => {
+        const t = convexTest(schema, modules);
+        const now = Date.now();
+
+        const toolId = await createLoan(
+            t,
+            "approved",
+            now + 86_400_000,
+            now + 2 * 86_400_000,
+        );
+
+        await t.mutation(internal.tools.refreshAvailability, { toolId });
+
+        const tool = await t.run(async (ctx) => ctx.db.get("tools", toolId));
+
+        expect(tool?.isAvailable).toBe(true);
+    });
+
+    it("keeps a tool available when its approved loan has ended", async () => {
+        const t = convexTest(schema, modules);
+        const now = Date.now();
+
+        const toolId = await createLoan(
+            t,
+            "approved",
+            now - 2 * 86_400_000,
+            now - 86_400_000,
+        );
+
+        await t.mutation(internal.tools.refreshAvailability, { toolId });
+
+        const tool = await t.run(async (ctx) => ctx.db.get("tools", toolId));
+
+        expect(tool?.isAvailable).toBe(true);
+    });
+
+    it.each(["pending", "declined", "returned"] as const)(
+        "keeps a tool available when its loan status is %s",
+        async (status) => {
+            const t = convexTest(schema, modules);
+            const now = Date.now();
+
+            const toolId = await createLoan(
+                t,
+                status,
+                now - 86_400_000,
+                now + 86_400_000,
+            );
+
+            await t.mutation(internal.tools.refreshAvailability, { toolId });
+
+            const tool = await t.run(async (ctx) => ctx.db.get("tools", toolId));
+
+            expect(tool?.isAvailable).toBe(true);
+        },
+    );
+
+    it("keeps a tool unavailable if another approved loan is still active", async () => {
+        const t = convexTest(schema, modules);
+        const now = Date.now();
+
+        const { ownerId, borrowerId, toolId } = await createFixture(t);
+
+        await t.run(async (ctx) => {
+            await ctx.db.insert("loans", {
+                toolId,
+                ownerId,
+                borrowerId,
+                startDate: now - 86_400_000,
+                endDate: now + 86_400_000,
+                status: "approved",
+            });
+
+            await ctx.db.insert("loans", {
+                toolId,
+                ownerId,
+                borrowerId,
+                startDate: now - 86_400_000,
+                endDate: now + 2 * 86_400_000,
+                status: "approved",
+            });
+        });
+
+        await t.mutation(internal.tools.refreshAvailability, { toolId });
+
+        const tool = await t.run(async (ctx) => ctx.db.get("tools", toolId));
+
+        expect(tool?.isAvailable).toBe(false);
+    });
+
+    it("schedules availability refresh after approval", async () => {
+        const t = convexTest(schema, modules);
+        const { loanId, toolId, startDate, endDate } =
+            await createPendingLoan(t);
+
+        await t.withIdentity({ subject: "owner-clerk-id" }).mutation(
+            api.loans.updateLoanStatus,
+            { loanId, newStatus: "approved" },
+        );
+
+        const jobs = await t.run(async (ctx) =>
+            ctx.db.system.query("_scheduled_functions").collect()
+        );
+
+        const refreshJobs = jobs.filter((job) =>
+            job.name.includes("refreshAvailability")
+        );
+
+        expect(refreshJobs).toHaveLength(3);
+
+        const scheduledTimes = refreshJobs.map((job) => job.scheduledTime);
+
+        expect(scheduledTimes).toContain(startDate);
+        expect(scheduledTimes).toContain(endDate + 1);
+
+        expect(
+            refreshJobs.every((job) =>
+                job.args.some(
+                    (arg) =>
+                        typeof arg === "object" &&
+                        arg !== null &&
+                        "toolId" in arg &&
+                        arg.toolId === toolId,
+                ),
+            ),
+        ).toBe(true);
+    });
+
+    it("only schedules an immediate refresh after declining", async () => {
+        const t = convexTest(schema, modules);
+        const { loanId } = await createPendingLoan(t);
+
+        await t.withIdentity({ subject: "owner-clerk-id" }).mutation(
+            api.loans.updateLoanStatus,
+            { loanId, newStatus: "declined" },
+        );
+
+        const jobs = await t.run(async (ctx) =>
+            ctx.db.system.query("_scheduled_functions").collect()
+        );
+
+        const refreshJobs = jobs.filter((job) =>
+            job.name.includes("refreshAvailability")
+        );
+
+        expect(refreshJobs).toHaveLength(1);
+    });
+});
+
+describe("getMyRequests", () => {
+    it("returns only requests made by the current user", async () => {
+        const t = convexTest(schema, modules);
+        const { ownerId, borrowerId, toolId } = await createFixture(t);
+
+        const strangerId = await t.run(async (ctx) =>
+            ctx.db.insert("users", {
+                clerkId: "stranger-clerk-id",
+                role: "user",
+                isTrusted: false,
+            })
+        );
+
+        await t.run(async (ctx) => {
+            const loanData = {
+                toolId,
+                ownerId,
+                startDate: Date.now() + 86_400_000,
+                endDate: Date.now() + 2 * 86_400_000,
+                status: "pending" as const,
+            };
+
+            await ctx.db.insert("loans", {
+                ...loanData,
+                borrowerId,
+            });
+
+            await ctx.db.insert("loans", {
+                ...loanData,
+                borrowerId: strangerId,
+            });
+        });
+
+        const requests = await t
+            .withIdentity({ subject: "borrower-clerk-id" })
+            .query(api.loans.getMyRequests, {});
+
+        expect(requests).toHaveLength(1);
+        expect(requests[0].borrowerId).toBe(borrowerId);
+        expect(requests[0].tool.name).toBe("Electric drill");
+        expect(requests[0].category?.name).toBe("Garden tools");
+
+        // The owner profile should not expose the Clerk ID.
+        expect(requests[0].owner).not.toHaveProperty("clerkId");
+    });
+});
+
+describe("getIncomingRequests", () => {
+    it("returns only requests concerning the current user's tools", async () => {
+        const t = convexTest(schema, modules);
+        const { ownerId, borrowerId, toolId } = await createFixture(t);
+
+        const otherOwnerId = await t.run(async (ctx) =>
+            ctx.db.insert("users", {
+                clerkId: "other-owner-clerk-id",
+                role: "user",
+                isTrusted: false,
+            })
+        );
+
+        const otherToolId = await t.run(async (ctx) =>
+            ctx.db.insert("tools", {
+                ownerId: otherOwnerId,
+                name: "Hammer",
+                category: (await ctx.db.query("categories").first())!._id,
+                condition: "good",
+                isAvailable: true,
+            })
+        );
+
+        await t.run(async (ctx) => {
+            const loanData = {
+                borrowerId,
+                startDate: Date.now() + 86_400_000,
+                endDate: Date.now() + 2 * 86_400_000,
+                status: "pending" as const,
+            };
+
+            await ctx.db.insert("loans", {
+                ...loanData,
+                ownerId,
+                toolId,
+            });
+
+            await ctx.db.insert("loans", {
+                ...loanData,
+                ownerId: otherOwnerId,
+                toolId: otherToolId,
+            });
+        });
+
+        const requests = await t
+            .withIdentity({ subject: "owner-clerk-id" })
+            .query(api.loans.getIncomingRequests, {});
+
+        expect(requests).toHaveLength(1);
+        expect(requests[0].ownerId).toBe(ownerId);
+        expect(requests[0].tool.name).toBe("Electric drill");
+        expect(requests[0].borrower?.name).toBe("Borrower");
+
+        // The borrower profile should not expose the Clerk ID.
+        expect(requests[0].borrower).not.toHaveProperty("clerkId");
     });
 });

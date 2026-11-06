@@ -5,9 +5,11 @@ import Image from "next/image";
 import { Tool } from "../types";
 import { PaginationStatus, useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Id } from "@/convex/_generated/dataModel";
 import Search from "antd/es/input/Search";
+import BorrowModal from "./BorrowModal";
+import useBorrowedToolContext, { BorrowedToolContext } from "../context/BorrowedToolContext";
 
 type PaginatedToolsGridProps<T>= {
     results: T[],
@@ -77,13 +79,27 @@ const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
         },
     );
 
-    return <PaginatedToolGrid
-        results={results}
-        getKey={item=> item.id}
-        status={status}
-        loadMore={loadMore}
-        renderItem={item=> <ToolCard tool={item}/>}
-    />;
+    const [borrowModalOpen, setBorrowModalOpen]= useState<boolean>(false);
+    const [borrowedTool, setBorrowedTool]= useState<Tool|null>(null);
+
+    return <BorrowedToolContext.Provider
+        value={{
+            borrowedTool: borrowedTool, setBorrowedTool: setBorrowedTool,
+            modalOpen: borrowModalOpen, setModalOpen: setBorrowModalOpen
+        }}
+    >
+        <BorrowModal
+            isOpen={borrowModalOpen}
+            onClose={()=> {setBorrowModalOpen(false)}}
+        />
+        <PaginatedToolGrid
+            results={results}
+            getKey={item=> item.id}
+            status={status}
+            loadMore={loadMore}
+            renderItem={item=> <ToolCard tool={item}/>}
+        />
+    </BorrowedToolContext.Provider>;
 };
 
 function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
@@ -136,6 +152,13 @@ const CategoryBullet= ({name, active= false, clickHandler}: {name: string, activ
 };
 
 const ToolCard = ({ tool }: { tool: Tool }) => {
+    const {setBorrowedTool, setModalOpen}= useBorrowedToolContext();
+
+    const openModal= ()=> {
+        setBorrowedTool(tool);
+        setModalOpen(true);
+    };
+
     return <div className="bg-white rounded-md p-[1rem] flex flex-col gap-[.5rem] min-w-[20rem] max-w-[25rem] grow w-full">
         <div className="w-full relative">
             <Image src={tool.image ?? "/placeholder.svg"} alt={tool.name + " image"} width={200} height={150} className="w-full rounded-md" />
@@ -156,9 +179,9 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
         <h6 className="text-[1.25rem] font-semibold leading-[140%]">{tool.name}</h6>
         <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem]">
             <UserOutlined />
-            Owner: {tool.owner?.name || tool.owner?.username || tool.owner?.clerkId}
+            Owner: {tool.owner?.name || tool.owner?.username || "Unnamed user"}
         </div>
-        <Button type="primary" className="w-full">Borrow</Button>
+        <Button type="primary" className="w-full" onClick={openModal}>Borrow</Button>
     </div>;
 };
 
