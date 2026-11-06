@@ -10,6 +10,7 @@
 
 import type * as categories from "../categories.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as loans from "../loans.js";
 import type * as messages from "../messages.js";
 import type * as seed from "../seed.js";
 import type * as tools from "../tools.js";
@@ -24,6 +25,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   "lib/auth": typeof lib_auth;
+  loans: typeof loans;
   messages: typeof messages;
   seed: typeof seed;
   tools: typeof tools;

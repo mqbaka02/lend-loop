@@ -66,11 +66,11 @@ function Hero () {
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-full relative rounded-xl overflow-hidden">
               <Image src={"/hero_.jpg"} alt="Tools" width={480} height={360} className="w-full" />
-              <div className="absolute top-0 bottom-0 right-0 left-0 z-[10] bg-gradient-to-b from-transparent to-black/80 flex items-end justify-center gap-[1.5rem] pb-[1.25rem]">
+              {/* <div className="absolute top-0 bottom-0 right-0 left-0 z-[10] bg-gradient-to-b from-transparent to-black/80 flex items-end justify-center gap-[1.5rem] pb-[1.25rem]">
                 <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
                 <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
                 <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
