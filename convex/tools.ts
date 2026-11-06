@@ -6,10 +6,21 @@ import { internalMutation } from "./_generated/server";
 import { faker } from "@faker-js/faker";
 
 export const getPublicTools= query({
-    args: {},
+    args: {
+        category: v.optional(v.id("categories")),
+    },
 
-    handler: async (context)=> {
-        const tools= await context.db.query("tools").collect();
+    handler: async (context, args)=> {
+        const toolsQuery= context.db.query("tools");
+
+
+        let tools;
+        const category= args.category;
+        if (category!== undefined){
+            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).collect();
+        }else {
+            tools= await toolsQuery.collect();
+        }
 
         const now= Date.now();
 
@@ -77,15 +88,22 @@ export const createTool= mutation({
 });
 
 export const getTools= query({
-    args: {},
+    args: {
+        category: v.optional(v.id("categories"))
+    },
 
     handler: async (context, args)=> {
         const user= await getCurrentUser(context);
-        
-        const tools= await context.db
-            .query("tools")
-            .withIndex("by_id").collect();
-        
+
+        const toolsQuery= context.db.query("tools");
+
+        let tools;
+        const category= args.category;
+        if (category!== undefined){
+            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).collect();
+        }else {
+            tools= await toolsQuery.collect();
+        }   
         
         const now= Date.now();
 
