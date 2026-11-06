@@ -1,6 +1,6 @@
 import { EyeInvisibleOutlined, LoadingOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { SignInButton } from "@clerk/nextjs";
-import { Button, Result, Skeleton, Spin } from "antd";
+import { Button, Empty, Result, Skeleton, Spin } from "antd";
 import Image from "next/image";
 import { Tool } from "../types";
 import { PaginationStatus, useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
@@ -40,14 +40,6 @@ export default function AuthCheckedToolsList ({activeCategory}: {activeCategory:
         <ToolsListPublic activeCategory={activeCategory} />;
 };
 
-const ToolCardSkeletons= ()=> {
-    return <>
-        <ToolCardSkeleton />
-        <ToolCardSkeleton />
-        <ToolCardSkeleton />
-    </>;
-}
-
 function PaginatedToolGrid<T>({results, status, loadMore, getKey, renderItem, pageSize= PAGE_SIZE}: PaginatedToolsGridProps<T>){
     return <div className="flex flex-col gap-[1rem]">
             <div className="flex flex-wrap gap-[1.5rem]">
@@ -56,6 +48,9 @@ function PaginatedToolGrid<T>({results, status, loadMore, getKey, renderItem, pa
                 <ToolCardSkeletons />
                 :
                 results.map(tool=> <Fragment key={getKey(tool)} >{renderItem(tool)}</Fragment>)
+            }
+            {
+                results.length=== 0 && <Empty description="No tools are registered yet" />
             }
             {
                 status=== "LoadingMore" && <ToolCardSkeletons />
@@ -161,11 +156,19 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
         <h6 className="text-[1.25rem] font-semibold leading-[140%]">{tool.name}</h6>
         <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem]">
             <UserOutlined />
-            Owner: {tool.owner?.clerkId}
+            Owner: {tool.owner?.name || tool.owner?.username || tool.owner?.clerkId}
         </div>
         <Button type="primary" className="w-full">Borrow</Button>
     </div>;
 };
+
+const ToolCardSkeletons= ()=> {
+    return <>
+        <ToolCardSkeleton />
+        <ToolCardSkeleton />
+        <ToolCardSkeleton />
+    </>;
+}
 
 const ToolCardSkeleton = () => {
     return <div className="bg-white rounded-md p-[1rem] flex flex-col gap-[.5rem] min-w-[20rem] max-w-[25rem] grow w-full">

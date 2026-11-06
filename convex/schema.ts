@@ -8,7 +8,11 @@ export default defineSchema({
     }),
     users: defineTable({
         clerkId: v.string(),
+        clerkUpdatedAt: v.optional(v.number()),
         isTrusted: v.boolean(),
+        username: v.optional(v.string()),
+        name: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
         role: v.union(
             v.literal("user"),
             v.literal("admin")

@@ -90,7 +90,9 @@ function UserWidget () {
                     />
                     <div className="flex flex-col gap-0">
                         <div className="leading-[1rem] text-[.75rem] font-semibold text-foreground-1 first-letter:uppercase">
-                            {user?.firstName || user?.username}
+                            {
+                                user?.firstName && user.lastName ? <>{user.firstName} {user.lastName}</> : <>{user?.username}</>
+                            }
                         </div>
                         <div className="leading-[1rem] text-[.75rem] text-primary">
                             @{user?.username}

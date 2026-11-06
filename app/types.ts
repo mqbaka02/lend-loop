@@ -4,11 +4,11 @@ type Tool = {
     name: string;
     category: string;
     owner: {
-        _id: Id<"users">;
-        _creationTime: number;
         clerkId: string;
         isTrusted: boolean;
-        role: "user" | "admin";
+        name?: string;
+        imageUrl?: string;
+        username?: string;
     } | null;
     condition: "new" | "good" | "fair" | "poor";
     desc: string | undefined;

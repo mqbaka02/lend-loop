@@ -73,7 +73,13 @@ export const getTools= query({
                 return {
                     name: tool.name,
                     category: category?.name ?? "No category",
-                    owner: owner,
+                    owner: owner ? {
+                        isTrusted: owner.isTrusted,
+                        clerkId: owner.clerkId,
+                        name: owner.name,
+                        imageUrl: owner.imageUrl,
+                        username: owner.username
+                    } : null,
                     condition: tool.condition,
                     desc: tool.description,
                     image: tool.imageId,
