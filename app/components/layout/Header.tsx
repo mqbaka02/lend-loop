@@ -5,17 +5,20 @@ import { Show, SignInButton, SignUpButton, useClerk, UserButton, useUser } from 
 import { Badge, Button } from "antd";
 import Container from "./Container";
 import Logo from "./Logo";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Header () {
+    const pathName= usePathname();
     return <div className="flex flex-col gap-0 w-full shadow-md sticky top-0 z-[999]">
         <div className="h-[5rem] w-full bg-background py-[1.25rem] flex items-center">
             <Container>
                 <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
                     <Logo />
                     <div className="w-full grow flex gap-[.25rem]">
-                        <NavLink active href="#">Browse tools</NavLink>
+                        <NavLink active={pathName=== "/"} href={"/"}>Browse tools</NavLink>
                         <Show when={"signed-in"}>
-                            <NavLink href="#">My activity</NavLink>
+                            <NavLink active={pathName=== "/myactivity"} href="/myactivity">My activity</NavLink>
                         </Show>
                     </div>
                     <UserWidget />
@@ -54,9 +57,9 @@ function NavLink({ href, children, active= false }: { href: string; children: Re
                 {children}
             </div>
             :
-            <a href={href} className={`bg-transparent hover:bg-pale-blue/30 transition duration-300 rounded-md text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem] font-inter`}>
+            <Link href={href} className={`bg-transparent hover:bg-pale-blue/30 transition duration-300 rounded-md text-foreground-1 font-semibold text-[.875rem] px-[1rem] py-[.5rem] leading-[1.5rem] font-inter`}>
                 {children}
-            </a>
+            </Link>
         }
     </>);
 };

@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation } from "./_generated/server";
 
 /**
@@ -10,7 +10,7 @@ export const ensureUser= mutation({
     handler: async (context)=> {
         const identity= await context.auth.getUserIdentity();
 
-        if (!identity) throw new Error("Unauthenticated user!");
+        if (!identity) throw new ConvexError("Unauthenticated user!");
 
         //Look up for the user in the DB
         const existingUser= await context.db

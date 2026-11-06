@@ -1,4 +1,4 @@
-import { EyeInvisibleOutlined, LoadingOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import { CalendarOutlined, EyeInvisibleOutlined, LoadingOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { SignInButton } from "@clerk/nextjs";
 import { Button, Empty, Result, Skeleton, Spin } from "antd";
 import Image from "next/image";
@@ -171,7 +171,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             </div>
             :
 
-            <div className="rounded-full bg-red-500/20 flex gap-[.25rem] items-center px-[1rem] py-[.25rem] text-primary font-semibold leading-[.875rem] text-[.75rem] w-max tracking-[0.038rem]">
+            <div className="rounded-full bg-red-500/20 flex gap-[.25rem] items-center px-[1rem] py-[.25rem] text-red-500 font-semibold leading-[.875rem] text-[.75rem] w-max tracking-[0.038rem]">
                 <div className="w-[.5rem] h-[.5rem] rounded-full bg-red-500"></div>
                 Unavailable
             </div>
@@ -181,7 +181,12 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             <UserOutlined />
             Owner: {tool.owner?.name || tool.owner?.username || "Unnamed user"}
         </div>
-        <Button type="primary" className="w-full" onClick={openModal}>Borrow</Button>
+        <Button type="primary" className="w-full" onClick={openModal}>
+            <div className="flex gap-[.5rem]">
+                <CalendarOutlined />
+                Request to Borrow
+            </div>
+        </Button>
     </div>;
 };
 

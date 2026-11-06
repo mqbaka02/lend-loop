@@ -3,7 +3,7 @@
  * This has nothing to do with the actual LendLoop project
  */
 
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const list= query({
@@ -21,7 +21,7 @@ export const send= mutation({
         const userIdentity= await context.auth.getUserIdentity();
 
         if (!userIdentity) {
-            throw new Error("User is not authenticated");
+            throw new ConvexError("User is not authenticated");
         }
 
         await context.db.insert("messages", {

@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./lib/auth";
 
@@ -111,10 +111,10 @@ export const createTool= mutation({
         const user= await getCurrentUser(context); //We need this to extract the (real) user's id
 
         const name= args.name.trim();
-        if (!name) throw new Error("Tool name cannot be empty!");
+        if (!name) throw new ConvexError("Tool name cannot be empty!");
 
         const category= await context.db.get("categories", args.category);
-        if (!category) throw new Error("Category not found!");
+        if (!category) throw new ConvexError("Category not found!");
 
         return await context.db.insert("tools", {
             ownerId: user._id, //We can trust this is the real id because it comes from Convex
@@ -135,18 +135,18 @@ export const seedTools= internalMutation({
     // const existingTools= await ctx.db.query("tools").take(1);
 
     // if (existingTools.length > 0) {
-    //   throw new Error("Tools table is not empty. Aborting seed.");
+    //   throw new ConvexError("Tools table is not empty. Aborting seed.");
     // }
 
     const users= await ctx.db.query("users").collect();
     const categories= await ctx.db.query("categories").collect();
 
     if (users.length=== 0) {
-      throw new Error("No users found. Sign in first.");
+      throw new ConvexError("No users found. Sign in first.");
     }
 
     if (categories.length=== 0) {
-      throw new Error("No categories found. Seed categories first.");
+      throw new ConvexError("No categories found. Seed categories first.");
     }
 
 

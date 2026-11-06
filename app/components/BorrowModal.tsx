@@ -8,6 +8,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import useNotificationContext from "../context/useNotificationContext";
+import { ConvexError } from "convex/values";
 
 const conditionTypeColors: Record<conditionType, string>= {
     new: "#92F5A4",
@@ -69,19 +70,35 @@ export default function BorrowModal ({isOpen, onClose}: {
                 closeSelf();
             }).catch((e) => {
                 setSubmitting(false);
-                console.error(e);
-                notifApi.notificationAPI["success"]({
-                    title: "Error!",
-                    description: e.message as string
-                });
+                console.log(e);
+                if (e instanceof ConvexError){
+                    const data= e.data;
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: data as string
+                    });
+                } else {
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: e.message as string
+                    });
+                }
             });
         } catch (error) {
             setSubmitting(false);
-            console.error(error);
-            notifApi.notificationAPI["success"]({
-                title: "Error!",
-                description: error as string
-            });
+            // console.error(error);
+            if (error instanceof ConvexError) {
+                const data = error.data;
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: data as string
+                });
+            } else {
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: error as string
+                });
+            }
         }
     }
 
@@ -89,6 +106,7 @@ export default function BorrowModal ({isOpen, onClose}: {
         title={"Borrow this item"}
         open={isOpen}
         onCancel={closeSelf}
+        rootClassName="blurred-modal"
         footer={
             <div className="flex gap-[.5rem] items-center justify-end">
                 <Button onClick={closeSelf}>Cancel</Button>
