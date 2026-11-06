@@ -48,7 +48,13 @@ const AuthCheckedToolsList= ({activeCategory}: {activeCategory: string})=> {
 };
 
 const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
-    const allTools= useQuery(api.tools.getTools, {category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined});
+    const allTools= useQuery(
+        api.tools.getTools,
+        {
+            category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined,
+            paginationOptions: {numItems: 10, cursor: null},
+        }
+    );
 
     return <div className="flex flex-wrap gap-[1.5rem]">
         {
@@ -66,7 +72,13 @@ const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
 };
 
 function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
-    const allTools= useQuery(api.tools.getPublicTools, {category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined});
+    const allTools= useQuery(
+        api.tools.getPublicTools,
+        {
+            category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined,
+            paginationOptions: {numItems: 10, cursor: null},
+        }
+    );
 
     return <div className="flex flex-wrap gap-[1.5rem]">
         {

@@ -27,6 +27,7 @@ export default defineSchema({
         category: v.id("categories"),
         description: v.optional(v.string()),
         imageId: v.optional(v.id("_storage")),
+        isAvailable: v.boolean(),
         condition: (v.union(
             v.literal("new"),
             v.literal("good"),

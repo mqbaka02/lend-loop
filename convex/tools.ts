@@ -4,10 +4,12 @@ import { getCurrentUser } from "./lib/auth";
 
 import { internalMutation } from "./_generated/server";
 import { faker } from "@faker-js/faker";
+import { paginationOptsValidator } from "convex/server";
 
 export const getPublicTools= query({
     args: {
         category: v.optional(v.id("categories")),
+        paginationOptions: paginationOptsValidator,
     },
 
     handler: async (context, args)=> {
@@ -17,7 +19,7 @@ export const getPublicTools= query({
         let tools;
         const category= args.category;
         if (category!== undefined){
-            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).collect();
+            tools= await toolsQuery.withIndex("by_category", (q)=> q.eq("category", category)).order("desc").collect();
         }else {
             tools= await toolsQuery.collect();
         }
@@ -55,41 +57,10 @@ export const getPublicTools= query({
     },
 });
 
-export const createTool= mutation({
-    args: {
-        name: v.string(),
-        category: v.id("categories"),
-        description: v.optional(v.string()),
-        condition: v.union(
-            v.literal("new"),
-            v.literal("good"),
-            v.literal("fair"),
-            v.literal("poor")
-        )
-    },
-
-    handler: async (context, args)=> {
-        const user= await getCurrentUser(context); //We need this to extract the (real) user's id
-
-        const name= args.name.trim();
-        if (!name) throw new Error("Tool name cannot be empty!");
-
-        const category= await context.db.get("categories", args.category);
-        if (!category) throw new Error("Category not found!");
-
-        return await context.db.insert("tools", {
-            ownerId: user._id, //We can trust this is the real id because it comes from Convex
-            name,
-            category: args.category,
-            description: args.description,
-            condition: args.condition
-        });
-    },
-});
-
 export const getTools= query({
     args: {
-        category: v.optional(v.id("categories"))
+        category: v.optional(v.id("categories")),
+        paginationOptions: paginationOptsValidator,
     },
 
     handler: async (context, args)=> {
@@ -141,6 +112,38 @@ export const getTools= query({
     },
 });
 
+export const createTool= mutation({
+    args: {
+        name: v.string(),
+        category: v.id("categories"),
+        description: v.optional(v.string()),
+        condition: v.union(
+            v.literal("new"),
+            v.literal("good"),
+            v.literal("fair"),
+            v.literal("poor")
+        )
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context); //We need this to extract the (real) user's id
+
+        const name= args.name.trim();
+        if (!name) throw new Error("Tool name cannot be empty!");
+
+        const category= await context.db.get("categories", args.category);
+        if (!category) throw new Error("Category not found!");
+
+        return await context.db.insert("tools", {
+            ownerId: user._id, //We can trust this is the real id because it comes from Convex
+            name,
+            category: args.category,
+            description: args.description,
+            condition: args.condition
+        });
+    },
+});
+
 export const seedTools = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -185,4 +188,23 @@ export const seedTools = internalMutation({
       categories: categories.length,
     };
   },
+});
+
+
+/**
+ * This is a migration function that I need to update all the existing data in the tools table because
+ * I added isAvailable key and need to make it non-optional
+ */
+export const migrateFromNoIsAvailableToIsAvailable= internalMutation({
+    args: {},
+
+    handler: async (context, args)=> {
+        const allTools= await context.db.query("tools").collect();
+
+        allTools.forEach(async tool=> {
+            await context.db.patch("tools", tool._id, {
+                isAvailable: true,
+            });
+        });
+    },
 });
