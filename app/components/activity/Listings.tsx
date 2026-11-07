@@ -29,9 +29,19 @@ export default function MyListings() {
     };
 
     return <TabChildrenContainer>
-        <Search
-            placeholder="Filter my listings"
-        />
+        <div className="flex">
+            <div className="flex flex-col gap-[.25rem] grow">
+                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
+                    My currentely listed tools
+                </h3>
+            </div>
+            <div className="flex items-start">
+                <Search
+                    placeholder="Filter my listings"
+                    size="large"
+                />
+            </div>
+        </div>
         <div className="flex flex-col gap-[1rem] w-full">
             {
                 listings?
@@ -39,11 +49,7 @@ export default function MyListings() {
                 {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails}/>)}
                 </>
                 :
-                <>
-                    <SingleListingSkeleton />
-                    <SingleListingSkeleton />
-                    <SingleListingSkeleton />
-                </>
+                <ListingSkeletons />
             }
             {
                 listings && listings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
@@ -96,6 +102,14 @@ const SingleListing= ({tool, editTool}: {
             <Button icon={<DeleteOutlined />} danger />
         </div>
     </div>;
+};
+
+export const ListingSkeletons= ()=> {
+    return <>
+        <SingleListingSkeleton />
+        <SingleListingSkeleton />
+        <SingleListingSkeleton />
+    </>;
 };
 
 const SingleListingSkeleton= ()=> {

@@ -12,6 +12,7 @@ import CreateEditToolModal from "../components/EditToolModal";
 import { EditedToolContext } from "../context/EditToolContext";
 import { Tool } from "../types";
 import { useRouter } from "next/navigation";
+import MyBorrowRequests from "../components/activity/BorrowRequests";
 
 
 export default function Page() {
@@ -148,13 +149,13 @@ function ActivityTabs({activeKey}: {activeKey: string}) {
     const items: TabsProps['items'] = [
         {
             key: '1',
-            label: 'Tab 1',
+            label: 'My listings',
             children: <MyListings />,
         },
         {
             key: '2',
-            label: 'Tab 2',
-            children: 'Content of Tab Pane 2',
+            label: 'My borrow requests',
+            children: <MyBorrowRequests />,
         },
         {
             key: '3',

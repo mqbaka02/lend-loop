@@ -83,7 +83,18 @@ export const getMyRequests= query({
                 const theCateg = await context.db.get("categories", theTool?.category);
                 return {
                     ...loan,
-                    tool: theTool,
+                    tool: {
+                        ...theTool,
+                        owner: {
+                            ...theOwner
+                        },
+                        category: theCateg?.name || "Other",
+                        categoryId: theTool.category,
+                        id: theTool._id,
+                        desc: theTool.description,
+                        image: theTool.imageId,
+                        date: theTool._creationTime
+                    },
                     owner: theOwner? {
                         name: theOwner.name,
                         username: theOwner.username,

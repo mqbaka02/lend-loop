@@ -1,0 +1,115 @@
+import useEditedToolContext from "@/app/context/EditToolContext";
+import { BorrowRequest, Tool } from "@/app/types";
+import { api } from "@/convex/_generated/api";
+import Search from "antd/es/input/Search";
+import { useQuery } from "convex/react";
+import { ListingSkeletons, TabChildrenContainer } from "./Listings";
+import { Button, Empty } from "antd";
+import { CalendarOutlined, CloseCircleFilled, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
+import Image from "next/image";
+import { loanStatusTypeColors } from "@/app/utils/conditioncolors";
+
+
+export default function MyBorrowRequests() {
+
+    const borrowRequests = useQuery(api.loans.getMyRequests, {});
+
+    const { setModalOpen, setEditedTool, setCurrentType } = useEditedToolContext();
+
+    return <TabChildrenContainer>
+        <div className="flex">
+            <div className="flex flex-col gap-[.25rem] grow">
+                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
+                    My borrow requests
+                </h3>
+            </div>
+            <div className="flex items-start">
+                <Search
+                    placeholder="Filter my requests"
+                    size="large"
+                />
+            </div>
+        </div>
+        <div className="flex flex-col gap-[1rem] w-full">
+            {
+                borrowRequests ?
+                    <>
+                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} />)}
+                    </>
+                    :
+                    <ListingSkeletons />
+            }
+            {
+                borrowRequests && borrowRequests.length === 0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
+                    <Empty />
+                    <Button type="primary" size="large" href="/">
+                        <div className="flex gap-[.5rem]">
+                            <SearchOutlined />
+                            View Tool Catalog
+                        </div>
+                    </Button>
+                </div>
+            }
+        </div>
+    </TabChildrenContainer>;
+};
+
+
+const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
+    return <div className="flex gap-[1.5rem] p-[1.5rem] bg-white rounded-xl w-full">
+        <div className="w-[16rem] h-[16rem] rounded-md overflow-hidden shrink-0 relative">
+            <Image src={borrowRequest.tool.image || "/placeholder.svg"} alt={borrowRequest.tool.name + " image"} width={256} height={256} className="object-cover h-full" />
+            <div className="absolute top-[1rem] left-[1rem]">
+                {
+                    <div className="rounded-full bg-red-500/20 flex gap-[.25rem] items-center px-[1rem] py-[.125rem] text-red-500 font-semibold text-[.75rem] w-max tracking-[0.038rem]" style={{background: loanStatusTypeColors[borrowRequest.status], color: borrowRequest.status=== "declined"? "#fb2c36": "#131b2e"}}>
+                        {borrowRequest.status}
+                    </div>
+                }
+            </div>
+        </div>
+        <div className="flex flex-col gap-[.5rem] w-full grow">
+            <div className="bg-light-blue p-[.125rem] px-[.5rem] rounded-full text-foreground-1 text-[.75rem] font-semibold capitalize w-max">{borrowRequest.tool.category}</div>
+            <h6 className="font-jakarta text-[1.25rem] text-foreground font-semibold">{borrowRequest.tool.name}</h6>
+            <div className="flex gap-[.5rem] p-[.5rem] items-center rounded-md bg-light-blue w-max">
+                <div className="w-[2.25rem] h-[2.25rem] rounded-full shrink-0 overflow-hidden">
+                    <Image src={borrowRequest.owner?.imageUrl || "/placeholder.svg"} alt={borrowRequest.tool.name + " image"} width={256} height={256} className="object-cover h-full" />
+                </div>
+                <div className="flex flex-col gap-0">
+                    <div className="flex gap-[.5rem]">
+                        <div className="font-sans font-semibold text-[.75rem] text-foreground-1">{borrowRequest.owner?.name || borrowRequest.tool.owner?.name || "Unknown user"}</div>
+                        {
+                            borrowRequest.owner?.isTrusted &&
+                            <div className="rounded-full bg-secondary flex gap-[.25rem] items-center px-[1rem] py-[.125rem] text-primary font-semibold text-[.75rem] w-max tracking-[0.038rem]">
+                                <SafetyOutlined />
+                                Trusted
+                            </div>
+                        }
+                    </div>
+                    <div className="font-sans font-semibold text-[.75rem] text-primary">@{borrowRequest.owner?.username || borrowRequest.tool.owner?.username || "user"}</div>
+                </div>
+            </div>
+            <div className="flex gap-[1rem] w-full">
+                <div className="flex gap-[.5rem] p-[.5rem] items-center bg-light-blue rounded-md grow">
+                    <CalendarOutlined className="text-[1.3rem]" />
+                    <div className="flex gap-0 flex-col">
+                        <div className="font-sans text-foreground text-[.75rem]">Requested start date</div>
+                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.startDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                    </div>
+                </div>
+                <div className="flex gap-[.5rem] p-[.5rem] items-center bg-secondary rounded-md grow">
+                    <CalendarOutlined className="text-[1.3rem]" />
+                    <div className="flex gap-0 flex-col">
+                        <div className="font-sans text-foreground text-[.75rem]">Requested start date</div>
+                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.startDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] w-[16rem] shrink-0">
+            <div className="text-[.75rem] font-semibold font-sans text-foreground-1">Request In Progress</div>
+            <div className="text-[.875rem] text-foreground font-light">The request is still pending. You can edit the requested dates or withdraw the request as long as the owner doesn't approve it.</div>
+            <Button icon={<CalendarOutlined />}>Modify dates</Button>
+            <Button icon={<CloseCircleOutlined />} danger>Withdraw</Button>
+        </div>
+    </div>;
+};

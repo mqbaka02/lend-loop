@@ -2,7 +2,7 @@
 
 import { Button, Input, Modal, Select } from "antd";
 import { Tool } from "../types";
-import { FormatPainterFilled, PlusOutlined, ToolFilled } from "@ant-design/icons";
+import { FormatPainterFilled, PlusOutlined, SaveOutlined, ToolFilled } from "@ant-design/icons";
 import { ChangeEventHandler, SubmitEventHandler, useState, MouseEvent, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -168,8 +168,14 @@ export default function CreateEditToolModal({type, tool, open, close}: {
             <div className="flex gap-[1rem]">
                 <ToolsIcon />
                 <div className="flex flex-col gap-[.25rem]">
-                    <div className="text-foreground-1 font-jakarta text-[1.5rem] font-bold leading-[100%]">{type=== "edit"? "List a New Tool": tool?.name||"Tool"}</div>
-                    <p className="text-[.875rem] text-foreground font-sans font-light">Share unused equipment with trusted neighbors.</p>
+                    <div className="text-foreground-1 font-jakarta text-[1.5rem] font-bold leading-[100%]">{type === "create" ? "List a New Tool" : tool?.name || "Tool"}</div>
+
+                    {
+                        type === "create" ?
+                            <p className="text-[.875rem] text-foreground font-sans font-light">Share unused equipment with trusted neighbors.</p>
+                            :
+                            <p className="text-[.875rem] text-foreground font-sans font-light">Editing the tool.</p>
+                    }
                 </div>
             </div>
         }
@@ -181,10 +187,18 @@ export default function CreateEditToolModal({type, tool, open, close}: {
                     type="primary"
                     loading={submitting}
                 >
-                    <div className="flex items-center gap-[.25rem]">
-                        <PlusOutlined />
-                        Publish Tool
-                    </div>
+                    {
+                        type==="create"?
+                        <div className="flex items-center gap-[.25rem]">
+                            <PlusOutlined />
+                            Publish Tool
+                        </div>
+                        :
+                        <div className="flex items-center gap-[.25rem]">
+                            <SaveOutlined />
+                            Save Edits
+                        </div>
+                    }
                 </Button>
             </div>
         }
