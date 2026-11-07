@@ -1,8 +1,9 @@
+import useEditedToolContext from "@/app/context/EditToolContext";
 import { Tool } from "@/app/types";
 import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { DeleteOutlined, EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Empty } from "antd";
 import Search from "antd/es/input/Search";
 import { useQuery } from "convex/react";
 import Image from "next/image";
@@ -18,7 +19,9 @@ export const TabChildrenContainer= ({children}: {children: React.ReactNode})=> {
 export default function MyListings() {
 
     const listings= useQuery(api.tools.getMyTools, {});
-    
+
+    const {setModalOpen}= useEditedToolContext();
+
     return <TabChildrenContainer>
         <Search
             placeholder="Filter my listings"
@@ -31,6 +34,17 @@ export default function MyListings() {
                 </>
                 :
                 <></>
+            }
+            {
+                listings && listings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
+                    <Empty />
+                    <Button type="primary" size="large" onClick={()=> setModalOpen(true)}>
+                        <div className="flex gap-[.5rem]">
+                            <PlusCircleOutlined />
+                            List a new tool
+                        </div>
+                    </Button>
+                </div>
             }
         </div>
     </TabChildrenContainer>;

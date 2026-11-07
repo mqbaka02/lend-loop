@@ -1,25 +1,35 @@
 "use client";
 
+import { BarsOutlined, ContainerOutlined, InboxOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useUser } from "@clerk/nextjs";
-import Container from "../components/layout/Container";
 import { Button, Segmented, Tabs } from "antd";
-import { BarsOutlined, ContainerOutlined, EyeOutlined, InboxOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import Container from "../components/layout/Container";
 
 import type { GetProp, SegmentedProps, TabsProps } from 'antd';
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import MyListings from "../components/activity/Listings";
-import useEditedToolContext, { EditedToolContext } from "../context/EditToolContext";
-import { Tool } from "../types";
 import CreateEditToolModal from "../components/EditToolModal";
-
-
+import { EditedToolContext } from "../context/EditToolContext";
+import { Tool } from "../types";
+import { useRouter } from "next/navigation";
 
 
 export default function Page() {
-    const { user }= useUser();
+    const { user, isSignedIn, isLoaded }= useUser();
     const [activeTabKey, setActiveTabKey]= useState<string>("1");
     const [editedTool, setEditedTool]= useState<Tool|null>(null);
     const [editModalShown, setEditModalShown]= useState<boolean>(false);
+
+    const router= useRouter();
+    useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            router.replace("/");
+        }
+    }, [isLoaded, isSignedIn, router]);
+
+    if (!isLoaded || !isSignedIn) {
+        return null;
+    }
 
     return <div className="w-full py-[2.5rem]">
         <Container>
