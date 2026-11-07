@@ -73,6 +73,7 @@ export const getTools= query({
                 return {
                     name: tool.name,
                     category: category?.name ?? "No category",
+                    categoryId: tool.category,
                     owner: owner ? {
                         isTrusted: owner.isTrusted,
                         // clerkId: owner.clerkId,
@@ -120,6 +121,7 @@ export const getMyTools= query({
             return {
                 name: tool.name,
                 category: category?.name ?? "No category",
+                categoryId: tool.category,
                 owner: owner ? {
                     isTrusted: owner.isTrusted,
                     // clerkId: owner.clerkId,
@@ -169,6 +171,41 @@ export const createTool= mutation({
             description: args.desc,
             condition: args.condition,
             isAvailable: true,
+        });
+    },
+});
+
+export const editTool= mutation({
+    args: {
+        id: v.id("tools"),
+        name: v.string(),
+        category: v.id("categories"),
+        desc: v.optional(v.string()),
+        condition: v.union(
+            v.literal("new"),
+            v.literal("good"),
+            v.literal("fair"),
+            v.literal("poor")
+        )
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context); //We need this to extract the (real) user's id
+
+        const name= args.name.trim();
+        if (!name) throw new ConvexError("Tool name cannot be empty!");
+
+        const category= await context.db.get("categories", args.category);
+        if (!category) throw new ConvexError("Category not found!");
+
+        const theTool= await context.db.get("tools", args.id);
+        if(!theTool) throw new ConvexError("Tool not found!");
+
+        return await context.db.patch("tools", theTool._id, {
+            name,
+            category: args.category,
+            description: args.desc,
+            condition: args.condition,
         });
     },
 });

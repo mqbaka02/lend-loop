@@ -5,6 +5,7 @@ type conditionType= "new" | "good" | "fair" | "poor";
 type Tool = {
     name: string;
     category: string;
+    categoryId: string;
     owner: {
         isTrusted: boolean;
         name?: string;

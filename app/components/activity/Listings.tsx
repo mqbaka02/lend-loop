@@ -3,7 +3,7 @@ import { Tool } from "@/app/types";
 import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Empty } from "antd";
+import { Button, Empty, Skeleton } from "antd";
 import Search from "antd/es/input/Search";
 import { useQuery } from "convex/react";
 import Image from "next/image";
@@ -39,7 +39,11 @@ export default function MyListings() {
                 {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails}/>)}
                 </>
                 :
-                <></>
+                <>
+                    <SingleListingSkeleton />
+                    <SingleListingSkeleton />
+                    <SingleListingSkeleton />
+                </>
             }
             {
                 listings && listings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
@@ -93,3 +97,10 @@ const SingleListing= ({tool, editTool}: {
         </div>
     </div>;
 };
+
+const SingleListingSkeleton= ()=> {
+    return  <div className="flex gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
+        <Skeleton.Image active style={{width: 100, height: 100}} />
+        <Skeleton active />
+    </div>;
+}

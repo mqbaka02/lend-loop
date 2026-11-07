@@ -3,7 +3,7 @@
 import { Button, Input, Modal, Select } from "antd";
 import { Tool } from "../types";
 import { FormatPainterFilled, PlusOutlined, ToolFilled } from "@ant-design/icons";
-import { ChangeEventHandler, SubmitEventHandler, useState, MouseEvent, useEffect } from "react";
+import { ChangeEventHandler, SubmitEventHandler, useState, MouseEvent, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import TextArea from "antd/es/input/TextArea";
@@ -29,6 +29,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
     const [errors, setErrors]= useState<Partial<Record<keyof toolValuesType, boolean>>>({});
 
     const createTool= useMutation(api.tools.createTool);
+    const editTool= useMutation(api.tools.editTool);
 
     const notifApi= useNotificationContext();
 
@@ -44,7 +45,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
         setSubmitting(true);
         const {category, name, condition}= values;
         const hasError= {} as typeof errors;
-        console.log(errors);
+        // console.log(errors);
         if (!(category&& category?.trim())){
             hasError.category= true;
         }
@@ -59,9 +60,19 @@ export default function CreateEditToolModal({type, tool, open, close}: {
             setErrors(hasError);
             return;
         }
-        console.log(values);
+        // console.log(values);
+        // return;
+        
         try {
-            createTool({...values, category: values.category as Id<"categories">})
+            //This is a quick way to swap between edit and create
+            //May rewrite this later
+            let promise;
+            if (type=== "edit"){
+                promise= editTool({...values, category: values.category as Id<"categories">, id: tool?.id!});
+            } else {
+                promise= createTool({...values, category: values.category as Id<"categories">});
+            }
+            promise
             .then(()=> {
                 setSubmitting(false);
                 setSubmitting(false);
@@ -74,7 +85,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
             .catch((error)=> {
                 setSubmitting(false);
                 setSubmitting(false);
-                console.log(error);
+                // console.log(error);
                 if (error instanceof ConvexError){
                     const data= error.data;
                     notifApi.notificationAPI["error"]({
@@ -110,7 +121,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
     const [values, setValues] = useState<toolValuesType>(() => {
         if (type === "edit" && tool) {
             return {
-                category: tool.category ?? "",
+                category: tool.categoryId ?? "",
                 condition: tool.condition ?? "good",
                 name: tool.name ?? "",
                 desc: tool.desc ?? "",
@@ -132,7 +143,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
 
     const handleChange: ChangeEventHandler<HTMLInputElement|HTMLTextAreaElement>= (event)=> {
         const targetId= event.target.id;
-        console.log(targetId, event.target.value);
+        // console.log(targetId, event.target.value);
         if (targetId.endsWith("desc")) {
             setValues({...values, desc: event.target.value});
             const newErrs= {...errors};
