@@ -6,6 +6,8 @@ export type EContextType= {
     setEditedTool: React.Dispatch<SetStateAction<Tool|null>>,
     modalOpen: boolean,
     setModalOpen: React.Dispatch<SetStateAction<boolean>>,
+    currentType: "edit"| "create",
+    setCurrentType: React.Dispatch<SetStateAction<"edit"| "create">>,
 };
 
 export const EditedToolContext= createContext<EContextType|null>(null);

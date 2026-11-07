@@ -20,7 +20,13 @@ export default function MyListings() {
 
     const listings= useQuery(api.tools.getMyTools, {});
 
-    const {setModalOpen}= useEditedToolContext();
+    const {setModalOpen, setEditedTool, setCurrentType}= useEditedToolContext();
+
+    const editToolDetails= (tool: Tool)=> {
+        setEditedTool(tool);
+        setModalOpen(true);
+        setCurrentType("edit");
+    };
 
     return <TabChildrenContainer>
         <Search
@@ -30,7 +36,7 @@ export default function MyListings() {
             {
                 listings?
                 <>
-                {listings.map(tool=> <SingleListing tool={tool} key={tool.id}/>)}
+                {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails}/>)}
                 </>
                 :
                 <></>
@@ -50,7 +56,10 @@ export default function MyListings() {
     </TabChildrenContainer>;
 };
 
-const SingleListing= ({tool}: {tool: Tool})=> {
+const SingleListing= ({tool, editTool}: {
+    tool: Tool,
+    editTool: (tool: Tool)=> void
+})=> {
     return <div className="flex gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[6rem] h-[6rem] rounded-md overflow-hidden">
             <Image src={tool.image || "/placeholder.svg"} alt={tool.name + " image"} width={200} height={200} className="object-cover h-full" />
@@ -79,7 +88,7 @@ const SingleListing= ({tool}: {tool: Tool})=> {
             <p className="font-sans w-full truncate text-foreground text-[.875rem]">{tool.desc}</p>
         </div>
         <div className="w-max flex gap-[.5rem] h-full">
-            <Button icon={<EditOutlined />} >Edit</Button>
+            <Button icon={<EditOutlined />} onClick={()=> editTool(tool)} >Edit</Button>
             <Button icon={<DeleteOutlined />} danger />
         </div>
     </div>;

@@ -3,7 +3,7 @@
 import { Button, Input, Modal, Select } from "antd";
 import { Tool } from "../types";
 import { FormatPainterFilled, PlusOutlined, ToolFilled } from "@ant-design/icons";
-import { ChangeEventHandler, SubmitEventHandler, useState, MouseEvent } from "react";
+import { ChangeEventHandler, SubmitEventHandler, useState, MouseEvent, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import TextArea from "antd/es/input/TextArea";
@@ -107,19 +107,28 @@ export default function CreateEditToolModal({type, tool, open, close}: {
         }
     }
 
-    const [values, setValues]= useState<toolValuesType>(
-        type==="edit"? tool!==null? {...tool} : {
-            name: "",
-            desc: "",
-            condition: "good",
-            category: ""
-        }:{
-            name: "",
-            desc: "",
-            condition: "good",
-            category: ""
+    const [values, setValues] = useState<toolValuesType>(() => {
+        if (type === "edit" && tool) {
+            return {
+                category: tool.category ?? "",
+                condition: tool.condition ?? "good",
+                name: tool.name ?? "",
+                desc: tool.desc ?? "",
+            };
         }
-    );
+        return {
+            name: "",
+            desc: "",
+            condition: "good",
+            category: ""
+        };
+    });
+
+    // useEffect(()=> {
+    //     console.log("TOOL: ", tool);
+    //     console.log("VALUES: ", values);
+    //     console.log("TYPE: ", type);
+    // }, [open, values, tool]);
 
     const handleChange: ChangeEventHandler<HTMLInputElement|HTMLTextAreaElement>= (event)=> {
         const targetId= event.target.id;
@@ -143,7 +152,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
     return <Modal
         destroyOnHidden
         open={open}
-        onCancel={closeSelf}
+        onCancel={close}
         title={
             <div className="flex gap-[1rem]">
                 <ToolsIcon />
@@ -155,7 +164,7 @@ export default function CreateEditToolModal({type, tool, open, close}: {
         }
         footer={
             <div className="flex gap-[.5rem] items-center justify-end">
-                <Button onClick={closeSelf}>Cancel</Button>
+                <Button onClick={close}>Cancel</Button>
                 <Button
                     onClick={submit as unknown as (event: MouseEvent<HTMLElement>)=> void}
                     type="primary"

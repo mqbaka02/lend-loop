@@ -19,6 +19,7 @@ export default function Page() {
     const [activeTabKey, setActiveTabKey]= useState<string>("1");
     const [editedTool, setEditedTool]= useState<Tool|null>(null);
     const [editModalShown, setEditModalShown]= useState<boolean>(false);
+    const [editCreateModalType, setEditCreateModalType]= useState<"edit"| "create">("edit");
 
     const router= useRouter();
     useEffect(() => {
@@ -33,8 +34,23 @@ export default function Page() {
 
     return <div className="w-full py-[2.5rem]">
         <Container>
-            <EditedToolContext.Provider value={{editedTool: editedTool, setEditedTool: setEditedTool, modalOpen: editModalShown, setModalOpen: setEditModalShown}}>
-                <CreateEditToolModal type="edit" close={()=> setEditModalShown(false)} open={editModalShown} tool={null} />
+            <EditedToolContext.Provider
+                value={{
+                    editedTool: editedTool,
+                    setEditedTool: setEditedTool,
+                    modalOpen: editModalShown,
+                    setModalOpen: setEditModalShown,
+                    currentType: editCreateModalType,
+                    setCurrentType: setEditCreateModalType
+                }}
+            >
+                <CreateEditToolModal
+                    type={editCreateModalType}
+                    close={()=> setEditModalShown(false)}
+                    open={editModalShown}
+                    tool={editedTool}
+                    key={`${editCreateModalType}-${editedTool?.id || 'new'}`}
+                />
                 <div className="flex flex-col gap-[2.5rem]">
                     <div className="w-full flex items-stretch">
                         <div className="flex flex-col gap-[.25rem] flex-[70]">
@@ -43,7 +59,15 @@ export default function Page() {
                             <p className="font-sans text-[1rem] balance text-balance leading-[162%]">Manage your shared equipment, track active borrow commitments, and review incoming requests from local neighbors with automated n8n notifications.</p>
                         </div>
                         <div className="w-full h-full flex flex-col self-end justify-end items-end flex-[30]">
-                            <Button type="primary" size="large" onClick={()=> setEditModalShown(true)}>
+                            <Button
+                                type="primary"
+                                size="large"
+                                onClick={()=> {
+                                    setEditModalShown(true);
+                                    setEditedTool(null);
+                                    setEditCreateModalType("create");
+                                }}
+                            >
                                 <div className="flex gap-[.5rem]">
                                     <PlusCircleOutlined />
                                     List a new tool
