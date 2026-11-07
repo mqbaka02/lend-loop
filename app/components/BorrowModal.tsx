@@ -9,13 +9,9 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import useNotificationContext from "../context/useNotificationContext";
 import { ConvexError } from "convex/values";
+import { conditionTypeColors } from "../utils/conditioncolors";
 
-const conditionTypeColors: Record<conditionType, string>= {
-    new: "#92F5A4",
-    good: "#77aaff",
-    fair: "#E2E7FF",
-    poor: "#FFDDB8"
-};
+
 type RangeValue = [Dayjs | null, Dayjs | null] | null;
 
 

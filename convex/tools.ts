@@ -94,11 +94,57 @@ export const getTools= query({
     },
 });
 
+export const getMyTools= query({
+    args: {
+        category: v.optional(v.id("categories")),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const category= args.category;
+        const toolsQuery= category !== undefined
+            ? context.db
+                .query("tools")
+                .withIndex("by_category_and_owner", (q)=> q.eq("category", category).eq("ownerId", user._id))
+            : context.db.query("tools")
+                .withIndex("by_owner", (q)=> q.eq("ownerId", user._id));
+
+        const result= await toolsQuery
+            .order("desc")
+            .collect();
+        
+        const tools= await Promise.all(result.map((async tool=> {
+            const category= await context.db.get("categories", tool.category);
+            const owner= await context.db.get("users", tool.ownerId);
+            return {
+                name: tool.name,
+                category: category?.name ?? "No category",
+                owner: owner ? {
+                    isTrusted: owner.isTrusted,
+                    // clerkId: owner.clerkId,
+                    name: owner.name,
+                    imageUrl: owner.imageUrl,
+                    username: owner.username
+                } : null,
+                condition: tool.condition,
+                desc: tool.description,
+                image: tool.imageId,
+                date: tool._creationTime,
+                isAvailable: tool.isAvailable,
+                id: tool._id,
+            };
+        })));
+
+        return tools;
+    },
+});
+
 export const createTool= mutation({
     args: {
         name: v.string(),
         category: v.id("categories"),
-        description: v.optional(v.string()),
+        desc: v.optional(v.string()),
         condition: v.union(
             v.literal("new"),
             v.literal("good"),
@@ -120,7 +166,7 @@ export const createTool= mutation({
             ownerId: user._id, //We can trust this is the real id because it comes from Convex
             name,
             category: args.category,
-            description: args.description,
+            description: args.desc,
             condition: args.condition,
             isAvailable: true,
         });

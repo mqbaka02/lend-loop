@@ -42,7 +42,8 @@ export default defineSchema({
     .index("by_owner", ["ownerId"])
     .index("by_category", ["category"])
     .index("by_available", ["isAvailable"])
-    .index("by_category_and_available", ["category", "isAvailable"]),
+    .index("by_category_and_available", ["category", "isAvailable"])
+    .index("by_category_and_owner", ["category", "ownerId"]),
 
     loans: defineTable({
         toolId: v.id("tools"),
