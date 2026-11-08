@@ -1,4 +1,5 @@
 import { Id } from "@/convex/_generated/dataModel";
+import { Dayjs } from "dayjs";
 
 type conditionType= "new" | "good" | "fair" | "poor";
 type loanStatus= "pending" | "withdrawn" | "approved"| "declined"| "returned";
@@ -44,4 +45,6 @@ type BorrowRequest = {
     status: loanStatus;
 }
 
-export type {Tool, conditionType, BorrowRequest, loanStatus};
+type RangeValue = [Dayjs | null, Dayjs | null] | null;
+
+export type {Tool, conditionType, BorrowRequest, loanStatus, RangeValue};

@@ -9,9 +9,7 @@ import { MouseEvent, SubmitEventHandler, useState } from "react";
 import useBorrowedToolContext from "../context/BorrowedToolContext";
 import useNotificationContext from "../context/useNotificationContext";
 import { conditionTypeColors } from "../utils/conditioncolors";
-
-
-type RangeValue = [Dayjs | null, Dayjs | null] | null;
+import { RangeValue } from "../types";
 
 
 export default function BorrowModal ({isOpen, onClose}: {
@@ -54,8 +52,8 @@ export default function BorrowModal ({isOpen, onClose}: {
         try {
             requestLoan({
                 toolId: borrowedTool?.id!,
-                endDate: dates[1].valueOf(),
                 startDate: dates[0].valueOf(),
+                endDate: dates[1].valueOf(),
             }).then(() => {
                 setSubmitting(false);
                 notifApi.notificationAPI["success"]({

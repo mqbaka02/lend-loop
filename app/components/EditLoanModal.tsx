@@ -1,26 +1,110 @@
 import { Id } from "@/convex/_generated/dataModel";
-import { Tool } from "../types";
-import { Button, Modal } from "antd";
+import { BorrowRequest, RangeValue, Tool } from "../types";
+import { Button, DatePicker, Modal } from "antd";
 import { MouseEvent, SubmitEventHandler, useState } from "react";
-import { SaveOutlined } from "@ant-design/icons";
+import { SaveOutlined, UserOutlined } from "@ant-design/icons";
 import useNotificationContext from "../context/useNotificationContext";
+import Image from "next/image";
+import { conditionTypeColors } from "../utils/conditioncolors";
+import dayjs, { Dayjs } from "dayjs";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { ConvexError } from "convex/values";
 
-export default function EditLoanModal ({open, tool, loanId, close}: {
+export default function EditLoanModal ({open, loan, close}: {
     open: boolean,
-    tool: Tool,
-    loanId: Id<"loans">,
+    loan: BorrowRequest|null,
     close: ()=> void
 }) {
     const closeSelf= ()=> {
         close();
     };
-    const submit: SubmitEventHandler<HTMLFormElement> = (event) => {};
     const notifApi= useNotificationContext();
     const [submitting, setSubmitting]= useState<boolean>(false);
+    const [hasError, setHasError]= useState<boolean>(false);
+
+    const [dates, setDates] = useState<RangeValue>([
+        dayjs(loan?.startDate),
+        dayjs(loan?.endDate)
+    ]);
+    const handleRangeChange = (
+        values: RangeValue, 
+        dateStrings: [string, string]
+    ) => {
+        setHasError(false);
+        setDates(values);
+    };
+
+    const editLoan = useMutation(api.loans.editLoanRequest);
+    const submit: SubmitEventHandler<HTMLFormElement> = (event) => {
+        event.preventDefault();
+        // console.log(dates);
+        setSubmitting(true);
+        // console.log(dates?.map(d=> d?.valueOf()));
+        if (dates === null || dates[0] === null || dates[1] === null) {
+            setHasError(true);
+            setSubmitting(false);
+            return;
+        }
+
+        if (!loan || !loan._id) {
+            notifApi.notificationAPI["error"]({
+                title: "Error",
+                description: "Loan object is not specified"
+            });
+            close();
+            return;
+        }
+
+        try {
+            editLoan({
+                loanId: loan._id,
+                startDate: dates[0].valueOf(),
+                endDate: dates[1].valueOf(),
+            }).then(() => {
+                setSubmitting(false);
+                notifApi.notificationAPI["success"]({
+                    title: "Chages saved!",
+                    description: "Your request has been updated."
+                });
+                closeSelf();
+            }).catch((e) => {
+                setSubmitting(false);
+                console.log(e);
+                if (e instanceof ConvexError) {
+                    const data = e.data;
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: data as string
+                    });
+                } else {
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: e.message as string
+                    });
+                }
+            });
+        } catch (error) {
+            setSubmitting(false);
+            // console.error(error);
+            if (error instanceof ConvexError) {
+                const data = error.data;
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: data as string
+                });
+            } else {
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: error as string
+                });
+            }
+        }
+    };
 
 
     return <Modal
-        title={"Borrow this item"}
+        title={"Modify the request dates"}
         open={open}
         onCancel={close}
         footer={
@@ -33,10 +117,48 @@ export default function EditLoanModal ({open, tool, loanId, close}: {
                 >
                     <div className="flex items-center gap-[.25rem]">
                         <SaveOutlined />
-                        Submit request
+                        Apply changes
                     </div>
                 </Button>
             </div>
         }
-    ></Modal>;
+    >
+        <div className="flex flex-col gap-[1rem] py-[1.5rem]">
+            <div className="flex flex-row gap-[1rem] rounded-md bg-light-blue p-[1rem] overflow-hidden">
+                <div className="w-[4rem] h-[4rem] rounded-md overflow-hidden shrink-0">
+                    <Image src={loan?.tool?.image ?? "/placeholder.svg"} alt={loan?.tool?.name || "Image_" + " image"} width={200} height={150} className="h-full rounded-md object-cover" />
+                </div>
+                <div className="flex flex-col gap-[.25rem] grow-0 min-w-0">
+                    <div className="rounded-full flex gap-[.25rem] items-center px-[1rem] py-[.25rem] text-primary font-semibold leading-[200%] text-[.75rem] w-max tracking-[0.038rem] capitalize" style={{ background: conditionTypeColors[loan?.tool?.condition || "good"] }}>
+                        {loan?.tool?.condition || "Good"}
+                    </div>
+                    <div className="text-[1.25rem] text-foreground-1 font-semibold font-jakarta">{loan?.tool?.name || ""}</div>
+                    <div className="w-full overflow-hidden">
+                        {loan?.tool?.desc && <p className="text-[.875rem] text-foreground font-sans truncate w-full font-light">{loan?.tool.desc}</p>}
+                    </div>
+                    <div className="flex gap-[0.45rem] items-center text-primary text-[.75rem] font-semibold">
+                        <UserOutlined />
+                        owner: {loan?.tool?.owner?.name || loan?.tool?.owner?.username || "Unknown user"}
+                    </div>
+                </div>
+            </div>
+            <form onSubmit={submit} className="flex flex-col gap-[.25rem]">
+                <label htmlFor="daterange" className="text-[.75rem] text-foreground-1 font-semibold">Requested Loan Period</label>
+                <DatePicker.RangePicker
+                    name="daterange"
+                    id="daterange"
+                    value={dates}
+                    onChange={handleRangeChange}
+                    status={hasError ? "error" : undefined}
+                ></DatePicker.RangePicker>
+            </form>
+            {/* <Alert
+                type="warning"
+                showIcon
+                title={<div className="text-[#653E00] text-[.75rem]">AUTOMATED N8N NEIGHBORHOOD WEBHOOK</div>}
+                description={<p className="text-[#653E00]">Powered by n8n automated notifications: Lender will receive instant push notification and automated SMS/email reminders will coordinate the return.</p>}
+                icon={<ThunderboltOutlined />}
+            /> */}
+        </div>
+    </Modal>;
 };

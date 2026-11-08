@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { ConvexError } from "convex/values";
+import EditLoanModal from "../EditLoanModal";
 
 
 export default function MyBorrowRequests() {
@@ -58,6 +59,13 @@ export default function MyBorrowRequests() {
         }
     };
 
+    const [loanEditModalOpen, setLoanEditModalOpen]= useState<boolean>(false);
+    const [edidtedloan, setEdidtedLoan]= useState<BorrowRequest|null>(null);
+    const editThisLoan= (loan: BorrowRequest)=> {
+        setEdidtedLoan(loan);
+        setLoanEditModalOpen(true);
+    };
+
     return <TabChildrenContainer>
         <div className="flex">
             <div className="flex flex-col gap-[.25rem] grow">
@@ -72,11 +80,24 @@ export default function MyBorrowRequests() {
                 />
             </div>
         </div>
+        <EditLoanModal
+            open={loanEditModalOpen}
+            close={()=> setLoanEditModalOpen(false)}
+            loan={edidtedloan}
+            key={`${edidtedloan?._id || 'new'}`}
+        />
         <div className="flex flex-col gap-[1rem] w-full">
             {
                 borrowRequests ?
                     <>
-                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} key={loan._id} withdrawLoan={onWithdrawLoan} />)}
+                        {borrowRequests.map(
+                            loan => <SingleBorrowRequest
+                                borrowRequest={loan}
+                                key={loan._id}
+                                withdrawLoan={onWithdrawLoan}
+                                editThisLoan={editThisLoan}
+                            />)
+                        }
                     </>
                     :
                     <ListingSkeletons />
@@ -97,9 +118,10 @@ export default function MyBorrowRequests() {
 };
 
 
-const SingleBorrowRequest= ({borrowRequest, withdrawLoan}: {
+const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
     borrowRequest: BorrowRequest,
     withdrawLoan: (loanId: Id<"loans">)=> void,
+    editThisLoan: (loan: BorrowRequest)=> void,
 })=> {
     const [imgSrc, setImgSrc]= useState(borrowRequest.owner?.imageUrl);
     return <div className="flex gap-[1.5rem] p-[1.5rem] bg-white rounded-xl w-full">
@@ -153,7 +175,7 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan}: {
                     <CalendarOutlined className="text-[1.3rem]" />
                     <div className="flex gap-0 flex-col">
                         <div className="font-sans text-foreground text-[.75rem]">Requested start date</div>
-                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.startDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.endDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
                     </div>
                 </div>
             </div>
@@ -161,7 +183,7 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan}: {
         <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] w-[16rem] shrink-0">
             <div className="text-[.75rem] font-semibold font-sans text-foreground-1">{requestTextExplanation[borrowRequest.status].title}</div>
             <div className="text-[.875rem] text-foreground font-light">{requestTextExplanation[borrowRequest.status].p}</div>
-            <Button icon={<CalendarOutlined />} className="mt-auto">Modify dates</Button>
+            <Button icon={<CalendarOutlined />} className="mt-auto" onClick={()=> editThisLoan(borrowRequest)}>Modify dates</Button>
             <Popconfirm
                 title="Are you sure you want to withdraw this request?"
                 description="This item will still be available in your request list and can be relaunched at any time."
