@@ -80,6 +80,8 @@ export const editLoanRequest= mutation({
         const theOwner= theTool.ownerId;
         if (theOwner=== user._id) throw new ConvexError("You can't borrow your own tool!");
         if (theLoan.borrowerId!== user._id) throw new ConvexError("This loan is not yours!");
+        if (theLoan.status=== "approved") throw new ConvexError("This loan has already been approved!");
+        if (theLoan.status=== "returned") throw new ConvexError("This loan has already been returned!");
 
         if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
 
@@ -97,6 +99,7 @@ export const editLoanRequest= mutation({
         return await context.db.patch("loans", theLoan._id, {
             endDate: args.endDate,
             startDate: args.startDate,
+            status: "pending"
         });
     },
 });

@@ -183,7 +183,12 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
         <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] w-[16rem] shrink-0">
             <div className="text-[.75rem] font-semibold font-sans text-foreground-1">{requestTextExplanation[borrowRequest.status].title}</div>
             <div className="text-[.875rem] text-foreground font-light">{requestTextExplanation[borrowRequest.status].p}</div>
-            <Button icon={<CalendarOutlined />} className="mt-auto" onClick={()=> editThisLoan(borrowRequest)}>Modify dates</Button>
+            <Button
+                icon={<CalendarOutlined />}
+                className="mt-auto"
+                onClick={()=> editThisLoan(borrowRequest)}
+                disabled={borrowRequest.status=== "returned"|| borrowRequest.status=== "approved"}
+            >Modify dates</Button>
             <Popconfirm
                 title="Are you sure you want to withdraw this request?"
                 description="This item will still be available in your request list and can be relaunched at any time."
@@ -208,7 +213,7 @@ const requestTextExplanation: Record<loanStatus, {title: string, p: string}>= {
     },
     approved: {
         title: "Request has been approved",
-        p: "The owner has agreed to lend you the tool, don't forget to return it before the due date.",
+        p: "The owner has agreed to lend you the tool, don't forget to return it before the due date. Once you return it the owner or an admin will mark the loan as returned.",
     },
     declined: {
         title: "Request has been declined",
