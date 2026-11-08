@@ -59,6 +59,48 @@ export const createLoanRequest= mutation({
     },
 });
 
+export const editLoanRequest= mutation({
+    args: {
+        startDate: v.number(),
+        endDate: v.number(),
+        loanId: v.id("loans"),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const theLoan= await context.db.get("loans", args.loanId);
+        if (!theLoan) throw new ConvexError("This loan doesn't exist!");
+
+        const theTool= await context.db.get("tools", theLoan.toolId);
+        if (!theTool) throw new ConvexError("This tool doesn't exist!");
+
+        const now= Date.now();
+
+        const theOwner= theTool.ownerId;
+        if (theOwner=== user._id) throw new ConvexError("You can't borrow your own tool!");
+        if (theLoan.borrowerId!== user._id) throw new ConvexError("This loan is not yours!");
+
+        if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
+
+        const allRelatedLoans= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", theTool._id)).collect();
+
+        if (allRelatedLoans.some(
+            loan => (
+                loan.status === "approved" &&
+                doRangesIntersect(loan.startDate, loan.endDate, args.startDate, args.endDate)
+            )
+        )){
+            throw new ConvexError("This tool is not available in this date range!")
+        }
+
+        return await context.db.patch("loans", theLoan._id, {
+            endDate: args.endDate,
+            startDate: args.startDate,
+        });
+    },
+});
+
 /**
  * List all the requests made by the current user
  */
@@ -174,7 +216,7 @@ export const updateLoanStatus= mutation({
 
         if (!theTool) throw new ConvexError("This tool doesn't exist!");
 
-        if (theTool.ownerId!== user._id && user.role!== "admin") throw new ConvexError("This tool doesn't belong to you!"); //Only owner and admin can mark as returned for now.
+        if (theTool.ownerId!== user._id && user.role!== "admin") throw new ConvexError("This tool doesn't belong to you!"); //Only owner and admin can approve or decline a loan.
 
         let newStatus= args.newStatus;
 
@@ -202,6 +244,33 @@ export const updateLoanStatus= mutation({
         }
 
         return result;
+    },
+});
+
+export const withdrawLoan= mutation({
+    args: {
+        loanId: v.id("loans"),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const theLoan= await context.db.get("loans", args.loanId);
+        if (!theLoan) throw new ConvexError("The loan is not found!");
+
+        if (theLoan.status=== "approved") throw new ConvexError("Loan is already approved!");
+        if (theLoan.status=== "declined") throw new ConvexError("Loan is already declined!");
+        if (theLoan.status=== "returned") throw new ConvexError("You already returned this loan!");
+
+        const theTool= await context.db.get("tools", theLoan.toolId);
+
+        if (!theTool) throw new ConvexError("This tool doesn't exist!");
+
+        if (theLoan.borrowerId!== user._id) throw new ConvexError("This loan hasn't been made by you!"); //Only the borrower can withdraw
+
+        return await context.db.patch("loans", theLoan._id, {
+            status: "withdrawn",
+        });
     },
 });
 

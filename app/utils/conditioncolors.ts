@@ -8,6 +8,7 @@ export const conditionTypeColors: Record<conditionType, string>= {
 };
 export const loanStatusTypeColors: Record<loanStatus, string>= {
     approved: "#92F5A4",
+    withdrawn: "#dedede",
     pending: "#aaeeff",
     returned: "#E2E7FF",
     declined: "#FFDDB8",

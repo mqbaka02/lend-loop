@@ -1,7 +1,7 @@
 import { Id } from "@/convex/_generated/dataModel";
 
 type conditionType= "new" | "good" | "fair" | "poor";
-type loanStatus= "pending" | "approved"| "declined"| "returned";
+type loanStatus= "pending" | "withdrawn" | "approved"| "declined"| "returned";
 
 type Tool = {
     name: string;
@@ -41,7 +41,7 @@ type BorrowRequest = {
     borrowerId: Id<"users">;
     startDate: number;
     endDate: number;
-    status: "pending"| "approved"| "declined"| "returned";
+    status: loanStatus;
 }
 
 export type {Tool, conditionType, BorrowRequest, loanStatus};

@@ -53,6 +53,7 @@ export default defineSchema({
         endDate: v.number(),
         status: v.union(
             v.literal("pending"), //Request sent (created) and waiting for owner's approval
+            v.literal("withdrawn"), //Request sent (created) but the sender gave up
             v.literal("approved"), //Approved and already borrowed or waiting for start date
             v.literal("declined"), //Declined
             v.literal("returned"), //Returned

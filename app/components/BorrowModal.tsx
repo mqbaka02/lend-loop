@@ -1,14 +1,13 @@
-import { Alert, Button, DatePicker, Modal } from "antd";
-import { conditionType, Tool } from "../types";
-import useBorrowedToolContext from "../context/BorrowedToolContext";
-import Image from "next/image";
-import { SendOutlined, ThunderboltOutlined, UserOutlined } from "@ant-design/icons";
-import { FormEvent, MouseEvent, SubmitEventHandler, useState } from "react";
-import dayjs, { Dayjs } from 'dayjs';
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import useNotificationContext from "../context/useNotificationContext";
+import { SendOutlined, ThunderboltOutlined, UserOutlined } from "@ant-design/icons";
+import { Alert, Button, DatePicker, Modal } from "antd";
+import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
+import { Dayjs } from 'dayjs';
+import Image from "next/image";
+import { MouseEvent, SubmitEventHandler, useState } from "react";
+import useBorrowedToolContext from "../context/BorrowedToolContext";
+import useNotificationContext from "../context/useNotificationContext";
 import { conditionTypeColors } from "../utils/conditioncolors";
 
 
@@ -102,7 +101,6 @@ export default function BorrowModal ({isOpen, onClose}: {
         title={"Borrow this item"}
         open={isOpen}
         onCancel={closeSelf}
-        rootClassName="blurred-modal"
         footer={
             <div className="flex gap-[.5rem] items-center justify-end">
                 <Button onClick={closeSelf}>Cancel</Button>
@@ -130,7 +128,7 @@ export default function BorrowModal ({isOpen, onClose}: {
                     </div>
                     <div className="text-[1.25rem] text-foreground-1 font-semibold font-jakarta">{borrowedTool?.name || ""}</div>
                     <div className="w-full overflow-hidden">
-                        {borrowedTool?.desc && <p className="text-[.875rem] text-foreground font-sans truncate w-full">{borrowedTool.desc}</p>}
+                        {borrowedTool?.desc && <p className="text-[.875rem] text-foreground font-sans truncate w-full font-light">{borrowedTool.desc}</p>}
                     </div>
                     <div className="flex gap-[0.45rem] items-center text-primary text-[.75rem] font-semibold">
                         <UserOutlined />

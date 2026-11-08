@@ -1,21 +1,62 @@
-import useEditedToolContext from "@/app/context/EditToolContext";
-import { BorrowRequest, Tool } from "@/app/types";
+import { BorrowRequest, loanStatus, Tool } from "@/app/types";
 import { api } from "@/convex/_generated/api";
 import Search from "antd/es/input/Search";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { ListingSkeletons, TabChildrenContainer } from "./Listings";
-import { Button, Empty } from "antd";
-import { CalendarOutlined, CloseCircleFilled, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Empty, Popconfirm } from "antd";
+import { CalendarOutlined, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import { loanStatusTypeColors } from "@/app/utils/conditioncolors";
 import { useState } from "react";
+import { Id } from "@/convex/_generated/dataModel";
+import useNotificationContext from "@/app/context/useNotificationContext";
+import { ConvexError } from "convex/values";
 
 
 export default function MyBorrowRequests() {
 
     const borrowRequests = useQuery(api.loans.getMyRequests, {});
 
-    const { setModalOpen, setEditedTool, setCurrentType } = useEditedToolContext();
+    const notifApi= useNotificationContext();
+
+    const withdrawLoan= useMutation(api.loans.withdrawLoan);
+    const onWithdrawLoan= (loanId: Id<"loans">)=> {
+        try{
+            withdrawLoan({loanId}).then(()=> {
+                notifApi.notificationAPI['success']({
+                    title: "Request canceled",
+                    description: "You successfully withdrawed the loan request.",
+                    type: "success"
+                });
+            }).catch((error) => {
+                if (error instanceof ConvexError) {
+                    const data = error.data;
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: data as string
+                    });
+                } else {
+                    notifApi.notificationAPI["error"]({
+                        title: "Error!",
+                        description: error.message as string
+                    });
+                }
+            });
+        } catch (error) {
+            if (error instanceof ConvexError) {
+                const data = error.data;
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: data as string
+                });
+            } else {
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: (error as any).message as string
+                });
+            }
+        }
+    };
 
     return <TabChildrenContainer>
         <div className="flex">
@@ -35,7 +76,7 @@ export default function MyBorrowRequests() {
             {
                 borrowRequests ?
                     <>
-                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} key={loan._id} />)}
+                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} key={loan._id} withdrawLoan={onWithdrawLoan} />)}
                     </>
                     :
                     <ListingSkeletons />
@@ -56,7 +97,10 @@ export default function MyBorrowRequests() {
 };
 
 
-const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
+const SingleBorrowRequest= ({borrowRequest, withdrawLoan}: {
+    borrowRequest: BorrowRequest,
+    withdrawLoan: (loanId: Id<"loans">)=> void,
+})=> {
     const [imgSrc, setImgSrc]= useState(borrowRequest.owner?.imageUrl);
     return <div className="flex gap-[1.5rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[16rem] h-[16rem] rounded-md overflow-hidden shrink-0 relative">
@@ -76,12 +120,11 @@ const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
                 <div className="w-[2.25rem] h-[2.25rem] rounded-full shrink-0 overflow-hidden">
                     <Image
                         src={imgSrc || "/placeholder.svg"}
-                        // src={borrowRequest.owner?.imageUrl || "/placeholder.svg"}
                         alt={borrowRequest.tool.name + " image"}
                         width={256}
                         height={256}
                         className="object-cover h-full"
-                        onError={()=> {setImgSrc("/hero_.jpg")}}
+                        onError={()=> {setImgSrc("/hero_.jpg")}}//In the case the URL is in an invalid format.
                     />
                 </div>
                 <div className="flex flex-col gap-0">
@@ -116,10 +159,41 @@ const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
             </div>
         </div>
         <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] w-[16rem] shrink-0">
-            <div className="text-[.75rem] font-semibold font-sans text-foreground-1">Request In Progress</div>
-            <div className="text-[.875rem] text-foreground font-light">The request is still pending. You can edit the requested dates or withdraw the request as long as the owner doesn't approve it.</div>
-            <Button icon={<CalendarOutlined />}>Modify dates</Button>
-            <Button icon={<CloseCircleOutlined />} danger>Withdraw</Button>
+            <div className="text-[.75rem] font-semibold font-sans text-foreground-1">{requestTextExplanation[borrowRequest.status].title}</div>
+            <div className="text-[.875rem] text-foreground font-light">{requestTextExplanation[borrowRequest.status].p}</div>
+            <Button icon={<CalendarOutlined />} className="mt-auto">Modify dates</Button>
+            <Popconfirm
+                title="Are you sure you want to withdraw this request?"
+                description="This item will still be available in your request list and can be relaunched at any time."
+                okType="danger"
+                align={{points: ["br", "tr"]}}
+                onConfirm={()=> withdrawLoan(borrowRequest._id)}
+            >
+                <Button icon={<CloseCircleOutlined />} danger disabled={borrowRequest.status!=="pending"} >Withdraw</Button>
+            </Popconfirm>
         </div>
     </div>;
+};
+
+const requestTextExplanation: Record<loanStatus, {title: string, p: string}>= {
+    pending: {
+        title: "Request In Progress",
+        p: "The request is still pending. You can edit the requested dates or withdraw the request as long as the owner doesn't approve it.",
+    },
+    withdrawn: {
+        title: "Request has been withdrawn",
+        p: "You withdrew this request. You can edit it and request again if you need to do so.",
+    },
+    approved: {
+        title: "Request has been approved",
+        p: "The owner has agreed to lend you the tool, don't forget to return it before the due date.",
+    },
+    declined: {
+        title: "Request has been declined",
+        p: "The owner didn't approve of your request. You can edit the requested dates to see if it's available at some other time.",
+    },
+    returned: {
+        title: "Tool returned",
+        p: "You have returned this tool. By returning the tools you borrow on time you become a trusted member on this platform.",
+    },
 };

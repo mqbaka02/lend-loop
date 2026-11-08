@@ -32,7 +32,7 @@ function Hero () {
             <div className="text-[.875rem] text-primary font-semibold leading-[1.25rem] tracking-[0.04rem]">LENDLOOP NEIGHBORHOOD NETWORK</div>
             <div className="flex flex-col gap-[1rem]">
               <h1 className="text-[3rem] text-foreground-1 font-bold leading-[125%] font-jakarta">Borrow what you need.<br/><span className="italic text-primary">Lend what you don't.</span></h1>
-              <p className="tracking-0 leading-[155.5%] text-[1.125rem] text-foreground text-balance">Why buy a miter saw or pressure washer for a single weekend? LendLoop connects neighbors to share everyday gear, cut household consumption, and build trust street by street.</p>
+              <p className="tracking-0 leading-[155.5%] text-[1.125rem] text-foreground text-balance font-light font-inter">Why buy a miter saw or pressure washer for a single weekend? LendLoop connects neighbors to share everyday gear, cut household consumption, and build trust street by street.</p>
               <div className="flex flex-col min-[40rem]:flex-row gap-[1rem]">
                 <Show when={"signed-in"}>
                   <Button type="primary" size="large">
