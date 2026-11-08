@@ -8,6 +8,7 @@ import { Button, Empty } from "antd";
 import { CalendarOutlined, CloseCircleFilled, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import { loanStatusTypeColors } from "@/app/utils/conditioncolors";
+import { useState } from "react";
 
 
 export default function MyBorrowRequests() {
@@ -34,7 +35,7 @@ export default function MyBorrowRequests() {
             {
                 borrowRequests ?
                     <>
-                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} />)}
+                        {borrowRequests.map(loan => <SingleBorrowRequest borrowRequest={loan} key={loan._id} />)}
                     </>
                     :
                     <ListingSkeletons />
@@ -56,6 +57,7 @@ export default function MyBorrowRequests() {
 
 
 const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
+    const [imgSrc, setImgSrc]= useState(borrowRequest.owner?.imageUrl);
     return <div className="flex gap-[1.5rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[16rem] h-[16rem] rounded-md overflow-hidden shrink-0 relative">
             <Image src={borrowRequest.tool.image || "/placeholder.svg"} alt={borrowRequest.tool.name + " image"} width={256} height={256} className="object-cover h-full" />
@@ -70,9 +72,17 @@ const SingleBorrowRequest= ({borrowRequest}: {borrowRequest: BorrowRequest})=> {
         <div className="flex flex-col gap-[.5rem] w-full grow">
             <div className="bg-light-blue p-[.125rem] px-[.5rem] rounded-full text-foreground-1 text-[.75rem] font-semibold capitalize w-max">{borrowRequest.tool.category}</div>
             <h6 className="font-jakarta text-[1.25rem] text-foreground font-semibold">{borrowRequest.tool.name}</h6>
-            <div className="flex gap-[.5rem] p-[.5rem] items-center rounded-md bg-light-blue w-max">
+            <div className="flex gap-[.5rem] p-[.5rem] items-center rounded-md bg-light-blue">
                 <div className="w-[2.25rem] h-[2.25rem] rounded-full shrink-0 overflow-hidden">
-                    <Image src={borrowRequest.owner?.imageUrl || "/placeholder.svg"} alt={borrowRequest.tool.name + " image"} width={256} height={256} className="object-cover h-full" />
+                    <Image
+                        src={imgSrc || "/placeholder.svg"}
+                        // src={borrowRequest.owner?.imageUrl || "/placeholder.svg"}
+                        alt={borrowRequest.tool.name + " image"}
+                        width={256}
+                        height={256}
+                        className="object-cover h-full"
+                        onError={()=> {setImgSrc("/hero_.jpg")}}
+                    />
                 </div>
                 <div className="flex flex-col gap-0">
                     <div className="flex gap-[.5rem]">

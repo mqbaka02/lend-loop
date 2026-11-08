@@ -54,7 +54,7 @@ export default function MyListings() {
             {
                 listings && listings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
                     <Empty />
-                    <Button type="primary" size="large" onClick={()=> setModalOpen(true)}>
+                    <Button type="primary" size="large" onClick={()=> {setModalOpen(true); setCurrentType("create");}}>
                         <div className="flex gap-[.5rem]">
                             <PlusCircleOutlined />
                             List a new tool
