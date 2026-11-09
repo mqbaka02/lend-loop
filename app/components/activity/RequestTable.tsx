@@ -8,7 +8,8 @@ import { Button, Popconfirm, Table } from "antd";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { SetStateAction, useMemo, useState } from "react";
+import ViewLoanModal from "./ViewLoanModal";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -25,7 +26,12 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
 
     const notifApi= useNotificationContext();
 
+    const [viewedLoan, setViewLoan]= useState<incomingRequest|null>(null);
+    const [viewModalOpen, setViewModalOpen]= useState<boolean>(false);
+    const [modalIsSubmitting, setModalIsSubmitting]= useState<boolean>(false);
+
     const rejectApproveLoan= (status: "declined"|"approved", loanId: Id<"loans">)=> {
+        setModalIsSubmitting(true);
         try{
             updateLoanStatus({loanId: loanId, newStatus: status})
             .then(()=> {
@@ -34,6 +40,8 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     description: status=== "approved"? "The borrower will come pick it up at the designed date." : "You will never see it again until the borrower edits it.",
                     type: "success"
                 });
+                setModalIsSubmitting(false);
+                setViewModalOpen(false);
             })
             .catch((error)=> {
                 if (error instanceof ConvexError) {
@@ -48,6 +56,8 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                         description: error.message as string
                     });
                 }
+                setModalIsSubmitting(false);
+                setViewModalOpen(false);
             });
         } catch (error) {
             if (error instanceof ConvexError) {
@@ -62,9 +72,12 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     description: (error as any).message as string
                 });
             }
+            setModalIsSubmitting(false);
+            setViewModalOpen(false);
         }
     };
     const markLoanReturned= (loanId: Id<"loans">)=> {
+        setModalIsSubmitting(true);
         try{
             returnLoan({loanId: loanId})
             .then(()=> {
@@ -73,6 +86,8 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     description: "Thank you for loaning. Doing this often will make you a trusted member.",
                     type: "success"
                 });
+                setModalIsSubmitting(false);
+                setViewModalOpen(false);
             })
             .catch((error)=> {
                 if (error instanceof ConvexError) {
@@ -87,6 +102,8 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                         description: error.message as string
                     });
                 }
+                setModalIsSubmitting(false);
+                setViewModalOpen(false);
             });
         } catch (error) {
             if (error instanceof ConvexError) {
@@ -101,10 +118,20 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     description: (error as any).message as string
                 });
             }
+            setModalIsSubmitting(false);
+            setViewModalOpen(false);
         }
     };
 
-    return (
+    return (<>
+        <ViewLoanModal
+            isOpen={viewModalOpen}
+            viewedLoan={viewedLoan}
+            onClose={()=> setViewModalOpen(false)}
+            rejectApproveLoan={rejectApproveLoan}
+            markLoanReturned={markLoanReturned}
+            submitting={modalIsSubmitting}
+        />
         <Table<incomingRequest & { key: Id<"loans"> }>
             loading={requests === undefined}
             rowSelection={{
@@ -144,7 +171,15 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     title: "Actions",
                     dataIndex: "actions",
                     width: 160,
-                    render: (_: unknown, req: incomingRequest) => <ActionsRender returnLoan={markLoanReturned} rejectOrApproveLoan={rejectApproveLoan} request={req} />,
+                    render: (_: unknown, req: incomingRequest) =>(
+                        <ActionsRender
+                            returnLoan={markLoanReturned}
+                            rejectOrApproveLoan={rejectApproveLoan}
+                            request={req}
+                            setViewModalOpen={setViewModalOpen}
+                            setViewedLoan={setViewLoan}
+                        />
+                    ),
                 },
             ]}
             dataSource={dataSource}
@@ -152,7 +187,7 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
             pagination={false}
             scroll={{ x: 1020, y: 600 }} // x≈ sum of widths (48 + 240 + 260 + 140 + 220 + 160 = 1068)
         />
-    );
+    </>);
 };
 
 const BorrowerRender= ({request}: {request: incomingRequest})=> {
@@ -233,10 +268,12 @@ const PeriodRender= ({ startDate, endDate }: { startDate: number, endDate: numbe
     </div>
 };
 
-const ActionsRender= ({request, rejectOrApproveLoan, returnLoan}: {
+const ActionsRender= ({request, rejectOrApproveLoan, returnLoan, setViewModalOpen, setViewedLoan}: {
     request: incomingRequest,
     returnLoan: (loanId: Id<"loans">)=> void
-    rejectOrApproveLoan: (status: "approved" | "declined", loanId: Id<"loans">)=> void
+    rejectOrApproveLoan: (status: "approved" | "declined", loanId: Id<"loans">)=> void,
+    setViewModalOpen: React.Dispatch<SetStateAction<boolean>>,
+    setViewedLoan: React.Dispatch<SetStateAction<incomingRequest|null>>,
 })=> {
     const returnMe= ()=> {
         returnLoan(request._id);
@@ -247,8 +284,12 @@ const ActionsRender= ({request, rejectOrApproveLoan, returnLoan}: {
     const approveMe= ()=> {
         rejectOrApproveLoan("approved", request._id);
     };
+    const viewMe= ()=> {
+        setViewedLoan(request);
+        setViewModalOpen(true);
+    };
     return <div className="flex flex-col gap-[.5rem]">
-        <Button icon={<EyeOutlined />} >View Loan</Button>
+        <Button icon={<EyeOutlined />} onClick={viewMe} >View Loan</Button>
         {
             request.status === "pending" &&
             <>
