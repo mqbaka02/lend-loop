@@ -150,7 +150,7 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
             dataSource={dataSource}
             virtual
             pagination={false}
-            scroll={{ x: 1020, y: 600 }} // x ≈ sum of widths (48 + 240 + 260 + 140 + 220 + 160 = 1068)
+            scroll={{ x: 1020, y: 600 }} // x≈ sum of widths (48 + 240 + 260 + 140 + 220 + 160 = 1068)
         />
     );
 };

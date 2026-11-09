@@ -117,7 +117,6 @@ export default function MyBorrowRequests() {
     </TabChildrenContainer>;
 };
 
-
 const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
     borrowRequest: BorrowRequest,
     withdrawLoan: (loanId: Id<"loans">)=> void,

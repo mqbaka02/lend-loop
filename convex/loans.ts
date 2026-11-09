@@ -298,6 +298,9 @@ export const markAsReturned= mutation({
 
         if (theLoan.status !== "approved") throw new ConvexError("Only approved loans can be marked as returned!"); //Why would you return something that hasn't been borrowed?
 
+        const now= Date.now();
+        if (theLoan.startDate> now) throw new ConvexError("The borrower hasn't still picked up that tool!"); //The borrow date is still in the future
+
         const result= await context.db.patch("loans", args.loanId, {
             status: "returned"
         });
