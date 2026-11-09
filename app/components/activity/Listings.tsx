@@ -10,6 +10,7 @@ import Search from "antd/es/input/Search";
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import Image from "next/image";
+import { useMemo, useState } from "react";
 
 export const TabChildrenContainer= ({children}: {children: React.ReactNode})=> {
     return <div className="flex flex-col gap-0 py-[1.5rem] w-full">
@@ -74,6 +75,17 @@ export default function MyListings() {
         }
     };
 
+    const [searchValue, setSearchValue]= useState<string>("");
+    const filteredListings= useMemo(()=> {
+        if (!listings) return undefined;
+        if (!searchValue) return listings;
+        return listings?.filter((tool)=> (tool.name.toLowerCase().search(searchValue.toLowerCase())!== -1 || (tool.desc && tool.desc.toLowerCase().search(searchValue.toLowerCase())!== -1)));
+    }, [listings, searchValue]);
+
+    const onSearchChange= (event: React.ChangeEvent<HTMLInputElement>)=> {
+        setSearchValue(event.currentTarget.value);
+    };
+
     return <TabChildrenContainer>
         <div className="flex">
             <div className="flex flex-col gap-[.25rem] grow">
@@ -85,20 +97,21 @@ export default function MyListings() {
                 <Search
                     placeholder="Filter my listings"
                     size="large"
+                    onChange={onSearchChange}
                 />
             </div>
         </div>
         <div className="flex flex-col gap-[1rem] w-full">
             {
-                listings?
+                filteredListings?
                 <>
-                {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool}/>)}
+                {filteredListings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool}/>)}
                 </>
                 :
                 <ListingSkeletons />
             }
             {
-                listings && listings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
+                filteredListings && filteredListings.length===0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
                     <Empty />
                     <Button type="primary" size="large" onClick={()=> {setModalOpen(true); setCurrentType("create");}}>
                         <div className="flex gap-[.5rem]">

@@ -7,7 +7,7 @@ import { Button, Empty, Popconfirm } from "antd";
 import { CalendarOutlined, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import { loanStatusTypeColors, requestTextExplanation } from "@/app/utils/conditioncolors";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { ConvexError } from "convex/values";
@@ -66,6 +66,21 @@ export default function MyBorrowRequests() {
         setLoanEditModalOpen(true);
     };
 
+    const [searchValue, setSearchValue]= useState<string>("");
+    const filteredBorrowRequests= useMemo(()=> {
+        if (!borrowRequests) return undefined;
+        if (!searchValue) return borrowRequests;
+        return borrowRequests
+        ?.filter((request)=> (
+            request.tool.name.toLowerCase().search(searchValue.toLowerCase())!== -1
+            || (request.tool.owner.name && request.tool.owner.name.toLowerCase().search(searchValue.toLowerCase())!== -1)
+            || (request.tool.owner.username && request.tool.owner.username.toLowerCase().search(searchValue.toLowerCase())!== -1)
+        ));
+    }, [searchValue, borrowRequests]);
+    const onSearchChange= (event: React.ChangeEvent<HTMLInputElement>)=> {
+        setSearchValue(event.currentTarget.value);
+    };
+
     return <TabChildrenContainer>
         <div className="flex">
             <div className="flex flex-col gap-[.25rem] grow">
@@ -77,6 +92,8 @@ export default function MyBorrowRequests() {
                 <Search
                     placeholder="Filter my requests"
                     size="large"
+                    value={searchValue}
+                    onChange={onSearchChange}
                 />
             </div>
         </div>
@@ -88,9 +105,9 @@ export default function MyBorrowRequests() {
         />
         <div className="flex flex-col gap-[1rem] w-full">
             {
-                borrowRequests ?
+                filteredBorrowRequests ?
                     <>
-                        {borrowRequests.map(
+                        {filteredBorrowRequests.map(
                             loan => <SingleBorrowRequest
                                 borrowRequest={loan}
                                 key={loan._id}
@@ -103,7 +120,7 @@ export default function MyBorrowRequests() {
                     <ListingSkeletons />
             }
             {
-                borrowRequests && borrowRequests.length === 0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
+                filteredBorrowRequests && filteredBorrowRequests.length === 0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
                     <Empty />
                     <Button type="primary" size="large" href="/">
                         <div className="flex gap-[.5rem]">
