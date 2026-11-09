@@ -1,11 +1,14 @@
 import useEditedToolContext from "@/app/context/EditToolContext";
+import useNotificationContext from "@/app/context/useNotificationContext";
 import { Tool } from "@/app/types";
 import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Empty, Skeleton } from "antd";
+import { Button, Empty, Popconfirm, Skeleton } from "antd";
 import Search from "antd/es/input/Search";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import Image from "next/image";
 
 export const TabChildrenContainer= ({children}: {children: React.ReactNode})=> {
@@ -19,6 +22,7 @@ export const TabChildrenContainer= ({children}: {children: React.ReactNode})=> {
 export default function MyListings() {
 
     const listings= useQuery(api.tools.getMyTools, {});
+    const deleteTool= useMutation(api.tools.deleteTool);
 
     const {setModalOpen, setEditedTool, setCurrentType}= useEditedToolContext();
 
@@ -26,6 +30,48 @@ export default function MyListings() {
         setEditedTool(tool);
         setModalOpen(true);
         setCurrentType("edit");
+    };
+
+    const notifApi= useNotificationContext();
+
+    const deleteSingleTool = (toolId: Id<"tools">) => {
+        try {
+            deleteTool({ toolId: toolId })
+                .then(() => {
+                    notifApi.notificationAPI['success']({
+                        title: "Tool deleted",
+                        description: "The tool has been wiped out in the database. All loans related to it will be deleted as well.",
+                        type: "success"
+                    });
+                })
+                .catch((error) => {
+                    if (error instanceof ConvexError) {
+                        const data = error.data;
+                        notifApi.notificationAPI["error"]({
+                            title: "Error!",
+                            description: data as string
+                        });
+                    } else {
+                        notifApi.notificationAPI["error"]({
+                            title: "Error!",
+                            description: error.message as string
+                        });
+                    }
+                });
+        } catch (error) {
+            if (error instanceof ConvexError) {
+                const data = error.data;
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: data as string
+                });
+            } else {
+                notifApi.notificationAPI["error"]({
+                    title: "Error!",
+                    description: (error as any).message as string
+                });
+            }
+        }
     };
 
     return <TabChildrenContainer>
@@ -46,7 +92,7 @@ export default function MyListings() {
             {
                 listings?
                 <>
-                {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails}/>)}
+                {listings.map(tool=> <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool}/>)}
                 </>
                 :
                 <ListingSkeletons />
@@ -66,9 +112,10 @@ export default function MyListings() {
     </TabChildrenContainer>;
 };
 
-const SingleListing= ({tool, editTool}: {
+const SingleListing= ({tool, editTool, deleteTool}: {
     tool: Tool,
-    editTool: (tool: Tool)=> void
+    editTool: (tool: Tool)=> void,
+    deleteTool: (toolId: Id<"tools">)=> void
 })=> {
     return <div className="flex gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[6rem] h-[6rem] rounded-md overflow-hidden">
@@ -99,7 +146,16 @@ const SingleListing= ({tool, editTool}: {
         </div>
         <div className="w-max flex gap-[.5rem] h-full">
             <Button icon={<EditOutlined />} onClick={()=> editTool(tool)} >Edit</Button>
-            <Button icon={<DeleteOutlined />} danger />
+            <Popconfirm
+                title={"Delete " + tool.name + "?"}
+                description={<p className="max-w-[15rem]">This action cannot be reverted. once you delete a tool, it's final.</p>}
+                okType="danger"
+                okText="Delete"
+                align={{points: ["br", "tr"]}}
+                onConfirm={()=> deleteTool(tool.id)}
+            >
+                <Button icon={<DeleteOutlined />} danger />
+            </Popconfirm>
         </div>
     </div>;
 };

@@ -134,10 +134,10 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
         />
         <Table<incomingRequest & { key: Id<"loans"> }>
             loading={requests === undefined}
-            rowSelection={{
-                type: "checkbox",
-                columnWidth: 48, // <-- fixes the huge checkbox column
-            }}
+            // rowSelection={{
+            //     type: "checkbox",
+            //     columnWidth: 48, // <-- fixes the huge checkbox column
+            // }}
             columns={[
                 {
                     title: "Borrower",

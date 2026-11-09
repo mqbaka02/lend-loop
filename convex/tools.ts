@@ -66,6 +66,7 @@ export const getTools= query({
             .order("desc")
             .paginate(args.paginationOpts);
 
+        //Enrich the results for data used by the frontend
         const page= await Promise.all(
             result.page.map(async (tool)=> {
                 const category= await context.db.get("categories", tool.category);
@@ -76,7 +77,6 @@ export const getTools= query({
                     categoryId: tool.category,
                     owner: owner ? {
                         isTrusted: owner.isTrusted,
-                        // clerkId: owner.clerkId,
                         name: owner.name,
                         imageUrl: owner.imageUrl,
                         username: owner.username
@@ -95,6 +95,37 @@ export const getTools= query({
     },
 });
 
+export const deleteTool= mutation({
+    args: {
+        toolId: v.id("tools"),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const theTool= await context.db.get("tools", args.toolId);
+        if(!theTool) throw new ConvexError("The tool doesn't exist!");
+
+        //Must be an admin or the owner of the tool
+        if (user.role!== "admin" && user._id!== theTool?.ownerId) throw new ConvexError("This tool doesn't belong toy you!");
+
+        //Cascade delete: all the requests for that tool will be deleted as well
+        //There is no reason to store a loan request that references a non-existent tool
+        const allRelatedrequests= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", theTool._id)).collect();
+
+        await Promise.all(
+            allRelatedrequests.map(req =>
+                context.db.delete("loans", req._id)
+            )
+        ).catch((error)=>{
+            throw new ConvexError(error);
+        });
+
+        const toolDeletionResult= await context.db.delete("tools", theTool._id);
+        return toolDeletionResult;
+    },
+});
+
 export const getMyTools= query({
     args: {
         category: v.optional(v.id("categories")),
@@ -104,6 +135,7 @@ export const getMyTools= query({
         const user= await getCurrentUser(context);
 
         const category= args.category;
+        //Filter by catogory or not filter at all depending on the argument
         const toolsQuery= category !== undefined
             ? context.db
                 .query("tools")

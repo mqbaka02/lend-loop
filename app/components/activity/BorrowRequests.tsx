@@ -189,8 +189,8 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
                 disabled={borrowRequest.status=== "returned"|| borrowRequest.status=== "approved"}
             >Modify dates</Button>
             <Popconfirm
-                title="Are you sure you want to withdraw this request?"
-                description="This item will still be available in your request list and can be relaunched at any time."
+                title={<p className="max-w-[15rem]">Are you sure you want to withdraw this request?</p>}
+                description={<p className="max-w-[15rem]">This item will still be available in your request list and can be relaunched at any time.</p>}
                 okType="danger"
                 align={{points: ["br", "tr"]}}
                 onConfirm={()=> withdrawLoan(borrowRequest._id)}
