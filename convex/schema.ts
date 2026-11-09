@@ -2,10 +2,14 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+    //This moddel is just a test as a Hello world for Convex
+    //It's unrelated to the project and is safe to delete
     messages: defineTable({
         text: v.string(),
         userId: v.string(),
     }),
+
+    //Project related models starts here
     users: defineTable({
         clerkId: v.string(),
         clerkUpdatedAt: v.optional(v.number()),
@@ -43,7 +47,11 @@ export default defineSchema({
     .index("by_category", ["category"])
     .index("by_available", ["isAvailable"])
     .index("by_category_and_available", ["category", "isAvailable"])
-    .index("by_category_and_owner", ["category", "ownerId"]),
+    .index("by_category_and_owner", ["category", "ownerId"])
+    .searchIndex("search_by_name", {
+        searchField: "name",
+        filterFields: ["isAvailable", "category"],
+    }),
 
     loans: defineTable({
         toolId: v.id("tools"),

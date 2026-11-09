@@ -5,11 +5,12 @@ import Image from "next/image";
 import { Tool } from "../types";
 import { PaginationStatus, useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Fragment, useState } from 'react';
+import { Fragment, SetStateAction, useState } from 'react';
 import { Id } from "@/convex/_generated/dataModel";
 import Search from "antd/es/input/Search";
 import BorrowModal from "./BorrowModal";
 import useBorrowedToolContext, { BorrowedToolContext } from "../context/BorrowedToolContext";
+import useDebouncedQueryStringContext from "../context/QueryString";
 
 type PaginatedToolsGridProps<T>= {
     results: T[],
@@ -69,10 +70,12 @@ function PaginatedToolGrid<T>({results, status, loadMore, getKey, renderItem, pa
 };
 
 const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
+    const queryStringCtx= useDebouncedQueryStringContext();
     const {results, status, loadMore}= usePaginatedQuery(
         api.tools.getTools,
         {
             category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined,
+            textQuery: queryStringCtx.value|| undefined,
         },
         {
             initialNumItems: PAGE_SIZE
@@ -103,10 +106,12 @@ const ToolslistPrivate= ({activeCategory}: {activeCategory: string})=> {
 };
 
 function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
+    const queryStringCtx= useDebouncedQueryStringContext();
     const {results, status, loadMore}= usePaginatedQuery(
         api.tools.getPublicTools,
         {
             category: activeCategory!=="" ? activeCategory as Id<"categories"> : undefined,
+            textQuery: queryStringCtx.value|| undefined,
         },
         {
             initialNumItems: PAGE_SIZE,
@@ -122,14 +127,28 @@ function ToolsListPublic ({activeCategory}: {activeCategory: string}) {
     />;
 };
 
-export const CategorySelector= ({selectCategory, activeCategory}: {selectCategory: (id: string)=> void, activeCategory: string})=> {
+export const CategorySelector= ({selectCategory, activeCategory, setQueryString}: {
+    selectCategory: (id: string)=> void,
+    activeCategory: string,
+    setQueryString: React.Dispatch<SetStateAction<string>>,
+})=> {
 
     const categories= useQuery(api.categories.getCategories);
+    const [searchValue, setSearchValue]= useState<string>("");
+    const onSearchChange= (event: React.ChangeEvent<HTMLInputElement>)=> {
+        setSearchValue(event.currentTarget.value);
+        setQueryString(event.currentTarget.value);
+    };
 
     return <div className="flex flex-col gap-[.25rem]">
         <h3 className="text-foreground-1 text-[2.25rem] font-bold font-jakarta">Community Tool Inventory</h3>
         <p className="text-foreground">Browse tools currently registered across nearby local clusters.</p>
-        <Search size="large" placeholder="Search by equipment name (e.g., drill, tiller, tent, mixer)..." />
+        <Search
+            size="large"
+            placeholder="Search by equipment name (e.g., drill, tiller, tent, mixer)..."
+            value={searchValue}
+            onChange={onSearchChange}
+        />
         <div className="flex flex-wrap gap-[.25rem]">
             <CategoryBullet name="All categories" clickHandler={() => { selectCategory("") }} active={activeCategory === ""} />
             {
@@ -177,7 +196,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             </div>
         }
         <h6 className="text-[1.25rem] font-semibold leading-[140%]">{tool.name}</h6>
-        <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem]">
+        <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem] mt-auto">
             <UserOutlined />
             Owner: {tool.owner?.name || tool.owner?.username || "Unnamed user"}
         </div>
@@ -212,7 +231,7 @@ const ToolCardPublic = ({ tool }: { tool: {name: string, category: string, id: s
             <div className="absolute top-[1rem] left-[1rem] bg-white text-primary font-semibold tracking-[.019rem] rounded-full p-[.5rem] py-[.125rem]">{tool.category}</div>
         </div>
         <h6 className="text-[1.25rem] font-semibold leading-[140%]">{tool.name}</h6>
-        <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem]">
+        <div className="flex gap-[.25rem] items-center justify-start w-full truncate p-[.5rem] rounded-md bg-pale-blue text-foreground text-[.75rem] mt-auto">
             <EyeInvisibleOutlined />
             Owner: (Private)
         </div>

@@ -9,25 +9,38 @@ import { paginationOptsValidator } from "convex/server";
 export const getPublicTools= query({
     args: {
         category: v.optional(v.id("categories")),
+        textQuery: v.optional(v.string()),
         paginationOpts: paginationOptsValidator,
     },
 
     handler: async (context, args)=> {
         const category= args.category;
+        const textQuery= args.textQuery;
 
         // Availability is part of the index range, so unavailable tools are never read
-        const toolsQuery= category !== undefined
-            ? context.db
-                .query("tools")
-                .withIndex("by_category_and_available", (q)=>
-                    q.eq("category", category).eq("isAvailable", true)
-                )
+        // If the textQuery is not empty or undefined, use it in the search
+        const toolsQuery= (!textQuery || !textQuery.trim())
+            ? category !== undefined
+                ? context.db
+                    .query("tools")
+                    .withIndex("by_category_and_available", (q)=>
+                        q.eq("category", category).eq("isAvailable", true)
+                    )
+                : context.db
+                    .query("tools")
+                    .withIndex("by_available", (q)=> q.eq("isAvailable", true))
             : context.db
                 .query("tools")
-                .withIndex("by_available", (q)=> q.eq("isAvailable", true));
+                .withSearchIndex("search_by_name", (q)=> {
+                    let matches= q.search("name", textQuery);
+                    if (category) {
+                        matches= matches.eq("category", category);
+                    }
+                    matches= matches.eq("isAvailable", true);
+                    return matches;
+                })
 
         const result= await toolsQuery
-            .order("desc")
             .paginate(args.paginationOpts);
 
         const page= await Promise.all(
@@ -49,6 +62,7 @@ export const getPublicTools= query({
 export const getTools= query({
     args: {
         category: v.optional(v.id("categories")),
+        textQuery: v.optional(v.string()),
         paginationOpts: paginationOptsValidator,
     },
 
@@ -56,14 +70,26 @@ export const getTools= query({
         const user= await getCurrentUser(context);
 
         const category= args.category;
-        const toolsQuery= category !== undefined
-            ? context.db
+        const textQuery= args.textQuery;
+
+        const toolsQuery= (!textQuery || !textQuery.trim())
+            ? category !== undefined
+                ? context.db
+                    .query("tools")
+                    .withIndex("by_category", (q)=> q.eq("category", category))
+                : context.db
+                    .query("tools")
+            : context.db
                 .query("tools")
-                .withIndex("by_category", (q)=> q.eq("category", category))
-            : context.db.query("tools");
+                .withSearchIndex("search_by_name", (q)=> {
+                    let matches= q.search("name", textQuery);
+                    if (category) {
+                        matches= matches.eq("category", category);
+                    }
+                    return matches;
+                })
 
         const result= await toolsQuery
-            .order("desc")
             .paginate(args.paginationOpts);
 
         //Enrich the results for data used by the frontend
