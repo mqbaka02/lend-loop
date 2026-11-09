@@ -45,6 +45,50 @@ type BorrowRequest = {
     status: loanStatus;
 }
 
+type incomingRequestTool= {
+    _id: Id<"tools">,
+    _creationTime: number,
+    description?: string | undefined,
+    imageId?: Id<"_storage"> | undefined,
+    name: string,
+    ownerId: Id<"users">,
+    category: Id<"categories">,
+    isAvailable: boolean,
+    condition: "new" | "good" | "fair" | "poor",
+};
+
+type incomingRequest= {
+    _id: Id<"loans">,
+    _creationTime: number,
+    ownerId: Id<"users">,
+    toolId: Id<"tools">,
+    borrowerId: Id<"users">,
+    startDate: number,
+    endDate: number,
+    status: "pending" | "withdrawn" | "approved" | "declined" | "returned",
+    tool: incomingRequestTool,
+    borrower: {
+        clerkUpdatedAt?: number,
+        username?: string,
+        name?: string,
+        imageUrl?: string,
+        isTrusted: boolean,
+    }| null,
+    category: {
+        _id: Id<"categories">,
+        _creationTime: number,
+        name: string,
+    } | null,
+};
+
 type RangeValue = [Dayjs | null, Dayjs | null] | null;
 
-export type {Tool, conditionType, BorrowRequest, loanStatus, RangeValue};
+export type {
+    Tool,
+    conditionType,
+    BorrowRequest,
+    loanStatus,
+    RangeValue,
+    incomingRequest,
+    incomingRequestTool,
+};

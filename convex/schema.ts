@@ -61,6 +61,7 @@ export default defineSchema({
     })
     .index("by_tool", ["toolId"])
     .index("by_owner", ["ownerId"])
+    .index("by_owner_and_status", ["ownerId", "status"])
     .index("by_borrower", ["borrowerId"])
     .index("by_status_end_date", ["status", "endDate"]),
 

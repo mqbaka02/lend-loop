@@ -13,6 +13,7 @@ import { EditedToolContext } from "../context/EditToolContext";
 import { Tool } from "../types";
 import { useRouter } from "next/navigation";
 import MyBorrowRequests from "../components/activity/BorrowRequests";
+import IncomingRequests from "../components/activity/IncomingRequests";
 
 
 export default function Page() {
@@ -159,8 +160,8 @@ function ActivityTabs({activeKey}: {activeKey: string}) {
         },
         {
             key: '3',
-            label: 'Tab 3',
-            children: 'Content of Tab Pane 3',
+            label: 'Incoming requests',
+            children: <IncomingRequests />,
         },
     ];
     return <Tabs

@@ -164,7 +164,8 @@ export const getIncomingRequests= query({
     handler: async (context, args)=> {
         const user= await getCurrentUser(context);
 
-        const loans= await context.db.query("loans").withIndex("by_owner", (q)=> q.eq("ownerId", user._id)).collect();
+        //hide withdrawn requests from owners
+        const loans= await context.db.query("loans").withIndex("by_owner_and_status", (q)=> q.eq("ownerId", user._id)).filter((q)=> q.neq(q.field("status"), "withdrawn")).collect();
         const enrichedLoans = await Promise.all(
             loans.map(async loan => {
                 //find the tool
@@ -232,7 +233,8 @@ export const updateLoanStatus= mutation({
             )
         )){
             newStatus= "declined"; //Fail silently
-            // throw new ConvexError("The tool is not available in this range anymore!"); // Or throw an error
+            throw new ConvexError("The tool is not available on that anymore!"); // Or throw an error
+            //I decided to throw an error to give the user a visual feedback
         }
 
         const result= await context.db.patch("loans", args.loanId, {
