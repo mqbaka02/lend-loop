@@ -35,10 +35,10 @@ function Hero () {
               <p className="tracking-0 leading-[155.5%] text-[1.125rem] text-foreground text-balance font-light font-inter">Why buy a miter saw or pressure washer for a single weekend? LendLoop connects neighbors to share everyday gear, cut household consumption, and build trust street by street.</p>
               <div className="flex flex-col min-[40rem]:flex-row gap-[1rem]">
                 <Show when={"signed-in"}>
-                  <Button type="primary" size="large">
+                  <Button type="primary" size="large" href="/myactivity">
                     <div className="flex gap-[.5rem] text-[.875rem] font-semibold px-[.8rem] py-[.75rem] leading-[1.25rem]">
                       <SwapOutlined />
-                      Lend or Borrow
+                      Manage your activities
                     </div>
                   </Button>
                 </Show>
@@ -52,7 +52,7 @@ function Hero () {
                     </Button>
                   </SignInButton>
                 </Show>
-                <Button color="default" size="large">
+                <Button color="default" size="large" href="#catalog">
                   <div className="flex gap-[.5rem] text-[.875rem] font-semibold px-[.8rem] py-[.75rem] leading-[1.25rem]">
                     Explore catalog
                     <ArrowDownOutlined />
@@ -79,15 +79,15 @@ function Hero () {
   </div>
 };
 
-const SmallBadgeWithIcon= ({icon, text}: {icon: React.ReactNode, text: React.ReactNode})=> {
-  return <>
-    <div className="flex gap-[.25rem] items-center justify-center bg-background p-[.40rem] px-[1.2rem] rounded-sm">
-      <div className="text-primary w-[1rem]">
-        {icon}
-      </div>
-      <div className="text-[.875rem] text-foreground leading-[1.25rem]">
-        {text}
-      </div>
-    </div>
-  </>;
-};
+// const SmallBadgeWithIcon= ({icon, text}: {icon: React.ReactNode, text: React.ReactNode})=> {
+//   return <>
+//     <div className="flex gap-[.25rem] items-center justify-center bg-background p-[.40rem] px-[1.2rem] rounded-sm">
+//       <div className="text-primary w-[1rem]">
+//         {icon}
+//       </div>
+//       <div className="text-[.875rem] text-foreground leading-[1.25rem]">
+//         {text}
+//       </div>
+//     </div>
+//   </>;
+// };

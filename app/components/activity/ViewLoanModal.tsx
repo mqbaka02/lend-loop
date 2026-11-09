@@ -1,13 +1,9 @@
-import useNotificationContext from "@/app/context/useNotificationContext";
 import { incomingRequest } from "@/app/types";
 import { conditionTypeColors } from "@/app/utils/conditioncolors";
-import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { CalendarOutlined, CheckOutlined, CloseOutlined, EnterOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
-import { useMutation } from "convex/react";
 import Image from "next/image";
-import { useState } from "react";
 
 
 export default function ViewLoanModal ({isOpen, onClose, viewedLoan, rejectApproveLoan, markLoanReturned, submitting}: {

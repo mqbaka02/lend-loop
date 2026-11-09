@@ -3,13 +3,12 @@ import { SendOutlined, ThunderboltOutlined, UserOutlined } from "@ant-design/ico
 import { Alert, Button, DatePicker, Modal } from "antd";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Dayjs } from 'dayjs';
 import Image from "next/image";
 import { MouseEvent, SubmitEventHandler, useState } from "react";
 import useBorrowedToolContext from "../context/BorrowedToolContext";
 import useNotificationContext from "../context/useNotificationContext";
-import { conditionTypeColors } from "../utils/conditioncolors";
 import { RangeValue } from "../types";
+import { conditionTypeColors } from "../utils/conditioncolors";
 
 
 export default function BorrowModal ({isOpen, onClose}: {

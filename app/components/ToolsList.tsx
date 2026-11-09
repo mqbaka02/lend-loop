@@ -15,7 +15,7 @@ export default function ToolsList () {
 
     return <div className="flex flex-col gap-0 bg-light-blue py-[2.5rem]">
         <Container>
-            <div className="flex flex-col gap-[1.5rem]">
+            <div className="flex flex-col gap-[1.5rem]" id="catalog">
                 <CategorySelector activeCategory={activeCategory} selectCategory={clickHandler_} />
                 <AuthCheckedToolsList activeCategory={activeCategory} />
             </div>
