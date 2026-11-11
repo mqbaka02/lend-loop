@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
+import { getCurrentUser } from "./lib/auth";
 
 /**
  * This will loook up for an signed in user's presence in the database and create it if he is not there yet
@@ -29,6 +30,10 @@ export const ensureUser= mutation({
     },
 });
 
+/**
+ * Function called by CLerk every time an user is created/edited
+ * Synchronizes Clerk's data with Convex data
+ */
 export const syncFromClerk = internalMutation({
     args: {
         clerkId: v.string(),
@@ -74,5 +79,24 @@ export const syncFromClerk = internalMutation({
             role: "user",
             isTrusted: false,
         });
+    },
+});
+
+export const isAdmin= query({
+    args: {},
+
+    handler:  async (context, args)=> {
+        try{
+            const user= await getCurrentUser(context);
+            return {value: user.role=== "admin"};
+        } catch (error) {
+            if (error instanceof Error && error.message=== "Unauthenticated user!") {
+                return {value: false};
+            } else if (error instanceof Error) {
+                throw new Error(error.message); //Rethrow the error
+            } else {
+                throw new Error("Unknown error"); //Is this even necessary?
+            }
+        }
     },
 });

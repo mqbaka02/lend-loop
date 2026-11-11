@@ -214,7 +214,7 @@ export const createTool= mutation({
     },
 
     handler: async (context, args)=> {
-        const user= await getCurrentUser(context); //We need this to extract the (real) user's id
+        const user= await getCurrentUser(context); //We need this to extract the (real) user's id and of course also to ensure that the user is authed
 
         const name= args.name.trim();
         if (!name) throw new ConvexError("Tool name cannot be empty!");
@@ -248,7 +248,7 @@ export const editTool= mutation({
     },
 
     handler: async (context, args)=> {
-        const user= await getCurrentUser(context); //We need this to extract the (real) user's id
+        const user= await getCurrentUser(context);
 
         const name= args.name.trim();
         if (!name) throw new ConvexError("Tool name cannot be empty!");

@@ -2,14 +2,16 @@
 
 import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "../components/ConvexClientProvider";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import { NotificationContext, useNewNotif } from "../context/useNotificationContext";
 import UserSync from "../components/utilities/EnsureUser";
+import { RoleTypeContext } from "../context/Role";
 
 export default function Providers ({children}: {children: React.ReactNode}) {
     const globalNotificationPusher= useNewNotif();
+    const [role, setRole]= useState<"admin"|"user">("user");
     return <ClerkProvider>
         <ConvexClientProvider>
             <Suspense fallback={null}>
@@ -22,11 +24,13 @@ export default function Providers ({children}: {children: React.ReactNode}) {
                             },
                         }}
                     >
-                        <NotificationContext.Provider value={globalNotificationPusher}>
-                            {globalNotificationPusher.contextHolder}
-                            <UserSync />
-                            {children}
-                        </NotificationContext.Provider>
+                        <RoleTypeContext.Provider value={{role, setRole}}>
+                            <NotificationContext.Provider value={globalNotificationPusher}>
+                                {globalNotificationPusher.contextHolder}
+                                <UserSync />
+                                {children}
+                            </NotificationContext.Provider>
+                        </RoleTypeContext.Provider>
                     </ConfigProvider>
                 </AntdRegistry>
             </Suspense>

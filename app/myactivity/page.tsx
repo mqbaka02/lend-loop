@@ -14,6 +14,7 @@ import { Tool } from "../types";
 import { useRouter } from "next/navigation";
 import MyBorrowRequests from "../components/activity/BorrowRequests";
 import IncomingRequests from "../components/activity/IncomingRequests";
+import useRoleContext from "../context/Role";
 
 
 export default function Page() {
@@ -22,6 +23,8 @@ export default function Page() {
     const [editedTool, setEditedTool]= useState<Tool|null>(null);
     const [editModalShown, setEditModalShown]= useState<boolean>(false);
     const [editCreateModalType, setEditCreateModalType]= useState<"edit"| "create">("edit");
+
+    const {role}= useRoleContext();
 
     const router= useRouter();
     useEffect(() => {
@@ -56,7 +59,14 @@ export default function Page() {
                 <div className="flex flex-col gap-[2.5rem]">
                     <div className="w-full flex items-stretch">
                         <div className="flex flex-col gap-[.25rem] flex-[70]">
-                            <div className="font-sans text-[.75rem] tracking-[.038rem] leading-[133%] uppercase">{user?.fullName || user?.username}</div>
+                            <div className="flex gap-[1rem] items-center">
+                                <div className="font-sans text-[.75rem] tracking-[.038rem] leading-[145%] uppercase">{user?.fullName || user?.username}</div>
+                                {
+                                    role=== "admin" && <div className="flex gap-[.5rem] text-[.5rem] bg-primary text-white uppercase p-[.2rem] px-[.8rem] rounded-sm font-semibold">
+                                        Admin Mode
+                                    </div>
+                                }
+                            </div>
                             <h1 className="font-jakarta font-bold text-[2.25rem] text-foreground-1 leading-[122%]">My Activity & Tool Management</h1>
                             <p className="font-sans text-[1rem] balance text-balance leading-[162%]">Manage your shared equipment, track active borrow commitments, and review incoming requests from local neighbors with automated n8n notifications.</p>
                         </div>

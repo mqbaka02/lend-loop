@@ -14,6 +14,11 @@ export async function getCurrentUser( context: QueryCtx | MutationCtx ) {
     return user;
 };
 
+/**
+ * I'll this instead of the getCurrentUser function for mutations/query that need an admin role
+ * @param context
+ * @returns 
+ */
 export async function requireAdmin( context: QueryCtx | MutationCtx ){
     const user= await getCurrentUser(context);
 

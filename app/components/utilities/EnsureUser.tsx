@@ -19,8 +19,8 @@ export default function UserSync () {
             .then(()=> {
                 notification.notificationAPI["success"]({
                     type: "success",
-                    title: "Login succesful",
-                    description: "Clerk sign in has succeded"
+                    title: "You are logged in!",
+                    description: "Clerk sign in has succeded."
                 });
             })
             .catch(error=> {
