@@ -2,7 +2,6 @@ import { BorrowRequest, loanStatus, Tool } from "@/app/types";
 import { api } from "@/convex/_generated/api";
 import Search from "antd/es/input/Search";
 import { useMutation, useQuery } from "convex/react";
-import { ListingSkeletons, TabChildrenContainer } from "./Listings";
 import { Button, Empty, Popconfirm } from "antd";
 import { CalendarOutlined, CloseCircleOutlined, SafetyOutlined, SearchOutlined } from "@ant-design/icons";
 import Image from "next/image";
@@ -12,6 +11,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { ConvexError } from "convex/values";
 import EditLoanModal from "../EditLoanModal";
+import { ListingSkeletons, TabChildrenContainer } from "./ListingsGeneric";
 
 
 export default function MyBorrowRequests() {

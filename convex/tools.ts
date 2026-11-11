@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser } from "./lib/auth";
+import { getCurrentUser, requireAdmin } from "./lib/auth";
 
 import { internalMutation } from "./_generated/server";
 import { faker } from "@faker-js/faker";
@@ -149,6 +149,39 @@ export const deleteTool= mutation({
 
         const toolDeletionResult= await context.db.delete("tools", theTool._id);
         return toolDeletionResult;
+    },
+});
+
+export const getToolsAdmin= query({
+    args: {},
+
+    handler: async (context, args)=> {
+        const user= requireAdmin(context);
+
+        const allTools= await context.db.query("tools").withIndex("by_creation_time").order("desc").collect();
+
+        return await Promise.all(allTools.map((async tool=> {
+            const category= await context.db.get("categories", tool.category);
+            const owner= await context.db.get("users", tool.ownerId);
+            return {
+                name: tool.name,
+                category: category?.name ?? "No category",
+                categoryId: tool.category,
+                owner: owner ? {
+                    isTrusted: owner.isTrusted,
+                    // clerkId: owner.clerkId,
+                    name: owner.name,
+                    imageUrl: owner.imageUrl,
+                    username: owner.username
+                } : null,
+                condition: tool.condition,
+                desc: tool.description,
+                image: tool.imageId,
+                date: tool._creationTime,
+                isAvailable: tool.isAvailable,
+                id: tool._id,
+            };
+        })));
     },
 });
 

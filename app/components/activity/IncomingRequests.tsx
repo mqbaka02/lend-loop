@@ -1,9 +1,9 @@
 import { api } from "@/convex/_generated/api";
 import Search from "antd/es/input/Search";
 import { useQuery } from "convex/react";
-import { TabChildrenContainer } from "./Listings";
 import RequestsTable from "./RequestTable";
 import { useMemo, useState } from "react";
+import { TabChildrenContainer } from "./ListingsGeneric";
 
 
 export default function IncomingRequests() {

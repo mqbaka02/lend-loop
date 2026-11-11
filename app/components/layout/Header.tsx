@@ -1,13 +1,11 @@
 "use client";
 
-import useRoleContext from "@/app/context/Role";
-import { api } from "@/convex/_generated/api";
 import { ArrowRightOutlined, BellOutlined, UnlockFilled } from "@ant-design/icons";
 import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { Badge, Button, Segmented } from "antd";
-import { useQuery } from "convex/react";
+import { Badge, Button } from "antd";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AdminSwitcher from "../AdminSwitcher";
 import Container from "./Container";
 import Logo from "./Logo";
 
@@ -69,8 +67,6 @@ function NavLink({ href, children, active= false }: { href: string; children: Re
 
 function UserWidget () {
     const {user}= useUser();
-    const isAdmin= useQuery(api.users.isAdmin);
-    const roleCtx= useRoleContext();
 
     const clickButton= ()=> {
         const clerkUserButton= document.querySelector(".clerk-user-button button") as HTMLButtonElement;
@@ -88,17 +84,7 @@ function UserWidget () {
                 <Badge dot>
                     <BellOutlined className="w-[1.2rem]" style={{ fontSize: 24 }} />
                 </Badge>
-                {
-                    isAdmin&& isAdmin.value&&
-                    <Segmented
-                        size="small"
-                        options={[
-                            {label: "User", value: "user"},
-                            {label: "Admin", value: "admin"},
-                        ]}
-                        onChange={(value: "user"|"admin")=> roleCtx.setRole(value)}
-                    />
-                }
+                <AdminSwitcher />
                 <div className="bg-white px-[.25rem] pr-[1.076rem] h-full rounded-full flex items-center gap-[.5rem] cursor-pointer" onClick={clickButton}>
                     <UserButton 
                         appearance={{

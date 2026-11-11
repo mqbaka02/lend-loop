@@ -1,20 +1,17 @@
 "use client";
 
-import { BarsOutlined, ContainerOutlined, InboxOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { useUser } from "@clerk/nextjs";
-import { Button, Segmented, Tabs } from "antd";
+import { Button } from "antd";
 import Container from "../components/layout/Container";
 
-import type { GetProp, SegmentedProps, TabsProps } from 'antd';
-import { SetStateAction, useEffect, useState } from "react";
-import MyListings from "../components/activity/Listings";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { ActivityTabs, SegmentedComponent } from "../components/activity/ActivityTabs";
 import CreateEditToolModal from "../components/EditToolModal";
 import { EditedToolContext } from "../context/EditToolContext";
-import { Tool } from "../types";
-import { useRouter } from "next/navigation";
-import MyBorrowRequests from "../components/activity/BorrowRequests";
-import IncomingRequests from "../components/activity/IncomingRequests";
 import useRoleContext from "../context/Role";
+import { Tool } from "../types";
 
 
 export default function Page() {
@@ -95,88 +92,4 @@ export default function Page() {
             </EditedToolContext.Provider>
         </Container>
     </div>;
-};
-
-
-const styleFn: SegmentedProps['styles']= (info): GetProp<SegmentedProps, 'styles', 'Return'>=> {
-    if (true) {
-        return {
-            root: {
-                padding: 4,
-            },
-            icon: {
-            },
-            item: {
-                textAlign: 'start',
-            },
-        };
-    }
-};
-function SegmentedComponent({setActiveTabKey}: {setActiveTabKey: React.Dispatch<SetStateAction<string>>}) {
-    const [activeValue, setActiveValue]= useState<string | number>(1);
-
-    const getOptionStyles= (value: number)=> {
-        const isActive= activeValue=== value;
-        return {
-            labelClass: isActive 
-                ? "text-primary font-bold text-[.875rem] inline" 
-                : "text-foreground-1 font-semibold text-[.875rem] inline",
-            iconClass: isActive ? 'text-primary' : 'text-foreground-1' 
-        };
-    };
-
-    const options= [
-        { value: 1, label: 'My Listings', Icon: BarsOutlined },
-        { value: 2, label: 'My Borrow Requests', Icon: ContainerOutlined },
-        { value: 3, label: 'Incoming Requests', Icon: InboxOutlined },
-    ].map(opt=> {
-        const styles= getOptionStyles(opt.value);
-        return {
-            value: opt.value,
-            icon: <opt.Icon className={styles.iconClass} />,
-            label: <div className={styles.labelClass}>{opt.label}</div>,
-        };
-    });
-
-    const onChange= (value: string | number)=> {
-        setActiveValue(value);
-        setActiveTabKey(String(value));
-    }
-
-    return (
-        <Segmented
-            size="large"
-            value={activeValue}
-            onChange={onChange}
-            styles={styleFn}
-            // {...segmentedSharedProps}
-            options={options}
-        />
-    );
-};
-
-
-function ActivityTabs({activeKey}: {activeKey: string}) {
-    const items: TabsProps['items'] = [
-        {
-            key: '1',
-            label: 'My listings',
-            children: <MyListings />,
-        },
-        {
-            key: '2',
-            label: 'My borrow requests',
-            children: <MyBorrowRequests />,
-        },
-        {
-            key: '3',
-            label: 'Incoming requests',
-            children: <IncomingRequests />,
-        },
-    ];
-    return <Tabs
-        items={items}
-        renderTabBar={()=> <></>}
-        activeKey={activeKey}
-    />
 };

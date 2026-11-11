@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { getCurrentUser } from "./lib/auth";
+import { getCurrentUser, requireAdmin } from "./lib/auth";
 
 /**
  * This will loook up for an signed in user's presence in the database and create it if he is not there yet
@@ -98,5 +98,18 @@ export const isAdmin= query({
                 throw new Error("Unknown error"); //Is this even necessary?
             }
         }
+    },
+});
+
+export const getUsersAdmin= query({
+    args: {},
+
+    handler: async (context, args)=> {
+        //This is for admins only
+        const user= requireAdmin(context);
+
+        const allUsers= await context.db.query("users").order("desc").collect();
+
+        return allUsers;
     },
 });
