@@ -6,7 +6,7 @@ import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined, SafetyOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Empty, Popconfirm, Skeleton } from "antd";
+import { Button, Empty, Listy, Popconfirm, Skeleton } from "antd";
 import Search from "antd/es/input/Search";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -111,7 +111,12 @@ export default function ListingsGeneric({listings, onSearchChange, texts}: {
             {
                 listings ?
                     <>
-                        {listings.map(tool => <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool} />)}
+                        {/* {listings.map(tool => <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool} />)} */}
+                        <Listy<listingType>
+                            items={listings}
+                            rowKey={"id"}
+                            itemRender={(item)=> <SingleListing tool={item} editTool={editToolDetails} deleteTool={deleteSingleTool} />}
+                        />
                     </>
                     :
                     <ListingSkeletons />
