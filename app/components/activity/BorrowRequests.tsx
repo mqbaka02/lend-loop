@@ -11,7 +11,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { ConvexError } from "convex/values";
 import EditLoanModal from "../EditLoanModal";
-import { ListingSkeletons, TabChildrenContainer } from "./ListingsGeneric";
+import { ListingSkeletons } from "./ListingsGeneric";
+import { TabChildrenContainer } from "./AbstractVirtualizedList";
 
 
 export default function MyBorrowRequests() {

@@ -3,7 +3,7 @@ import Search from "antd/es/input/Search";
 import { useQuery } from "convex/react";
 import RequestsTable from "./RequestTable";
 import { useMemo, useState } from "react";
-import { TabChildrenContainer } from "./ListingsGeneric";
+import { TabChildrenContainer } from "./AbstractVirtualizedList";
 
 
 export default function IncomingRequests() {

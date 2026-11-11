@@ -6,6 +6,7 @@ import { BarsOutlined, ContainerOutlined, InboxOutlined, UserOutlined } from "@a
 import { SetStateAction, useState } from "react";
 import useRoleContext from "@/app/context/Role";
 import ListingsAdmin from "./ListingsAdmin";
+import BorrowRequestsAdmin from "./BorrowRequestsAdmin";
 
 const styleFn: SegmentedProps['styles']= (info): GetProp<SegmentedProps, 'styles', 'Return'>=> {
     if (true) {
@@ -88,7 +89,7 @@ export function ActivityTabs({activeKey}: {activeKey: string}) {
         {
             key: '2',
             label: 'All Borrow Requests',
-            children: <MyBorrowRequests />,
+            children: <BorrowRequestsAdmin />,
         },
         {
             key: '3',

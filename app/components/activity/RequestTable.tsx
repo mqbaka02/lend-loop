@@ -10,11 +10,14 @@ import { ConvexError } from "convex/values";
 import Image from "next/image";
 import { SetStateAction, useMemo, useState } from "react";
 import ViewLoanModal from "./ViewLoanModal";
+import useRoleContext from "@/app/context/Role";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 
 export default function RequestsTable ({ requests }: { requests?: incomingRequest[] }) {
+
+    const roleCTX= useRoleContext();
 
     const dataSource = useMemo(()=> requests?.map(req => ({
         ...req,
@@ -143,8 +146,27 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
                     title: "Borrower",
                     dataIndex: "borrower",
                     width: 240,
-                    render: (_: unknown, req: incomingRequest) => <BorrowerRender request={req} />,
+                    render: (_: unknown, req: incomingRequest) =>
+                    <UserRender
+                        name={req.borrower?.name}
+                        username={req.borrower?.username}
+                        imageUrl={req.borrower?.imageUrl}
+                        isTrusted={req.borrower?.isTrusted}
+                    />,
                 },
+                //Display the owner when in admin mode
+                ...(roleCTX.role==="admin"? [{
+                    title: "Owner",
+                    dataIndex: "owner",
+                    width: 240,
+                    render: (_: unknown, req: incomingRequest) =>
+                    <UserRender
+                        name={req.owner?.name}
+                        username={req.owner?.username}
+                        imageUrl={req.owner?.imageUrl}
+                        isTrusted={req.owner?.isTrusted}
+                    />,
+                }]: []),
                 {
                     title: "Tool",
                     dataIndex: "tool_name",
@@ -190,9 +212,14 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
     </>);
 };
 
-const BorrowerRender= ({request}: {request: incomingRequest})=> {
+const UserRender= ({name, username, isTrusted= false, imageUrl}: {
+    name?: string,
+    username?: string,
+    isTrusted?: boolean,
+    imageUrl?: string,
+})=> {
 
-    const [imgSrc, setImgSrc]= useState(request.borrower?.imageUrl);
+    const [imgSrc, setImgSrc]= useState(imageUrl);
 
     return <div className="flex gap-[.5rem] p-[.5rem] items-center rounded-md">
         <div className="w-[2.25rem] h-[2.25rem] rounded-full shrink-0 overflow-hidden">
@@ -207,15 +234,15 @@ const BorrowerRender= ({request}: {request: incomingRequest})=> {
         </div>
         <div className="flex flex-col gap-0">
             <div className="flex gap-[.5rem]">
-                <div className="font-sans font-semibold text-[.875rem] text-foreground-1 capitalize">{request.borrower?.name || request.borrower?.username || "Unknown user"}</div>
+                <div className="font-sans font-semibold text-[.875rem] text-foreground-1 capitalize">{name || username || "Unknown user"}</div>
                 {
-                    request.borrower?.isTrusted &&
+                    isTrusted &&
                     <div className="rounded-full bg-secondary flex min-w-[1.2rem] h-[1.2rem] gap-[.25rem] items-center justify-center text-primary font-semibold text-[.75rem] w-max tracking-[0.038rem]">
                         <SafetyOutlined />
                     </div>
                 }
             </div>
-            <div className="font-sans font-semibold text-[.75rem] text-primary">@{request.borrower?.username || "@user"}</div>
+            <div className="font-sans font-semibold text-[.75rem] text-primary">@{username || "@user"}</div>
         </div>
     </div>;
 };

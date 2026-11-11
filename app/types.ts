@@ -57,7 +57,7 @@ type incomingRequestTool= {
     condition: "new" | "good" | "fair" | "poor",
 };
 
-type incomingRequest= {
+type incomingRequest = {
     _id: Id<"loans">,
     _creationTime: number,
     ownerId: Id<"users">,
@@ -73,7 +73,13 @@ type incomingRequest= {
         name?: string,
         imageUrl?: string,
         isTrusted: boolean,
-    }| null,
+    } | null,
+    owner: {
+        name?: string
+        username?: string
+        imageUrl?: string
+        isTrusted?: boolean
+    },
     category: {
         _id: Id<"categories">,
         _creationTime: number,

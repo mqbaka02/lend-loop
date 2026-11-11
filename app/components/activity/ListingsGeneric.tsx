@@ -6,11 +6,11 @@ import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined, SafetyOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Empty, Listy, Popconfirm, Skeleton } from "antd";
-import Search from "antd/es/input/Search";
+import { Button, Popconfirm, Skeleton } from "antd";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import Image from "next/image";
+import AbstractVirtualizedList from "./AbstractVirtualizedList";
 
 type listingType = {
     name: string;
@@ -92,58 +92,24 @@ export default function ListingsGeneric({listings, onSearchChange, texts}: {
     };
 
 
-    return <TabChildrenContainer>
-        <div className="flex">
-            <div className="flex flex-col gap-[.25rem] grow">
-                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
-                    {texts.title}
-                </h3>
-            </div>
-            <div className="flex items-start">
-                <Search
-                    placeholder={texts.searchPlaceholder}
-                    size="large"
-                    onChange={onSearchChange}
-                />
-            </div>
-        </div>
-        <div className="flex flex-col gap-[1rem] w-full">
-            {
-                listings ?
-                    <>
-                        {/* {listings.map(tool => <SingleListing tool={tool} key={tool.id} editTool={editToolDetails} deleteTool={deleteSingleTool} />)} */}
-                        <Listy<listingType>
-                            items={listings}
-                            rowKey={"id"}
-                            itemRender={(item)=> <SingleListing tool={item} editTool={editToolDetails} deleteTool={deleteSingleTool} />}
-                        />
-                    </>
-                    :
-                    <ListingSkeletons />
-            }
-            {
-                listings && listings.length === 0 && <div className="w-full flex flex-col items-center justify-center gap-[1.5rem]">
-                    <Empty />
-                    <Button type="primary" size="large" onClick={() => { setModalOpen(true); setCurrentType("create"); }}>
-                        <div className="flex gap-[.5rem]">
-                            <PlusCircleOutlined />
-                            List a new tool
-                        </div>
-                    </Button>
+    return <AbstractVirtualizedList<listingType>
+        texts={texts}
+        listKey={"id"}
+        onSearchChange={onSearchChange}
+        renderItem={(item) => <SingleListing tool={item} editTool={editToolDetails} deleteTool={deleteSingleTool} />}
+        theList={listings}
+        EmptyRender={
+            <Button type="primary" size="large" onClick={() => { setModalOpen(true); setCurrentType("create"); }}>
+                <div className="flex gap-[.5rem]">
+                    <PlusCircleOutlined />
+                    List a new tool
                 </div>
-            }
-        </div>
-    </TabChildrenContainer>;
+            </Button>
+        }
+        skeletons={<ListingSkeletons />}
+    />;
 };
 
-
-export const TabChildrenContainer= ({children}: {children: React.ReactNode})=> {
-    return <div className="flex flex-col gap-0 py-[1.5rem] w-full">
-        <div className="flex flex-col gap-[1.5rem]">
-            {children}
-        </div>
-    </div>;
-};
 
 const SingleListing= ({tool, editTool, deleteTool}: {
     tool: Tool,

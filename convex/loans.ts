@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { getCurrentUser } from "./lib/auth";
+import { getCurrentUser, requireAdmin } from "./lib/auth";
 import { internal } from "./_generated/api";
 import { faker } from "@faker-js/faker";
 
@@ -114,18 +114,18 @@ export const getMyRequests= query({
         const user= await getCurrentUser(context);
 
         const loans= await context.db.query("loans").withIndex("by_borrower", (q)=> q.eq("borrowerId", user._id)).collect();
-        const enrichedLoans = await Promise.all(
+        const enrichedLoans= await Promise.all(
             loans.map(async loan => {
                 //find the tool
-                const theTool = await context.db.get("tools", loan.toolId);
-                if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
+                const theTool= await context.db.get("tools", loan.toolId);
+                if (!theTool) return null; // just checking to avoid Ts errors or unknown network errors, those should always exist
 
-                //find the borrower name
-                const theOwner = await context.db.get("users", loan.ownerId);
-                if (!theOwner) return null; // just checking to avoid Ts errors, those should always exist
+                //find the Owner name
+                const theOwner= await context.db.get("users", loan.ownerId);
+                if (!theOwner) return null; // Same
 
                 //find the category??
-                const theCateg = await context.db.get("categories", theTool?.category);
+                const theCateg= await context.db.get("categories", theTool?.category);
                 return {
                     ...loan,
                     tool: {
@@ -146,6 +146,61 @@ export const getMyRequests= query({
                         imageUrl: theOwner.imageUrl,
                         isTrusted: theOwner.isTrusted,
                     }: null,
+                    category: theCateg
+                };
+            })
+        );
+
+        return enrichedLoans.filter(e=> e!==null);
+    },
+});
+/**
+ * List all the requests made by the current user
+ */
+export const getRequestsAdmin= query({
+    args: {},
+
+    handler: async (context, args)=> {
+        const user= await requireAdmin(context);
+
+        const loans= await context.db.query("loans").withIndex("by_creation_time").order("desc").collect();
+        const enrichedLoans= await Promise.all(
+            loans.map(async loan => {
+                //find the tool
+                const theTool= await context.db.get("tools", loan.toolId);
+                if (!theTool) return null; // just checking to avoid Ts errors, those should always exist
+
+                //find the borrower name
+                const theBorrower= await context.db.get("users", loan.borrowerId);
+                if (!theBorrower) return null; // Avoir errors
+
+                const theOwner= await context.db.get("users", loan.ownerId);
+                if (!theOwner) return null; // Same
+
+                //find the category??
+                const theCateg = await context.db.get("categories", theTool?.category);
+                return {
+                    ...loan,
+                    tool: {
+                        ...theTool,
+                        owner: {
+                            ...theOwner
+                        },
+                        categoryName: theCateg?.name || "Other",
+                        categoryId: theTool.category,
+                        category: theTool.category,
+                        id: theTool._id,
+                        desc: theTool.description,
+                        image: theTool.imageId,
+                        date: theTool._creationTime
+                    },
+                    owner: {
+                        name: theOwner.name,
+                        username: theOwner.username,
+                        imageUrl: theOwner.imageUrl,
+                        isTrusted: theOwner.isTrusted,
+                    },
+                    borrower: theBorrower,
                     category: theCateg
                 };
             })
@@ -188,6 +243,12 @@ export const getIncomingRequests= query({
                         imageUrl: theBorrower.imageUrl,
                         isTrusted: theBorrower.isTrusted,
                     }: null,
+                    owner: {
+                        name: user.name,
+                        username: user.username,
+                        imageUrl: user.imageUrl,
+                        isTrusted: user.isTrusted,
+                    },
                     category: theCateg
                 };
             })
