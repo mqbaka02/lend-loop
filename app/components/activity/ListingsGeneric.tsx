@@ -1,10 +1,11 @@
 import useEditedToolContext from "@/app/context/EditToolContext";
+import useRoleContext from "@/app/context/Role";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { Tool } from "@/app/types";
 import { conditionTypeColors } from "@/app/utils/conditioncolors";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { DeleteOutlined, EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusCircleOutlined, SafetyOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Empty, Popconfirm, Skeleton } from "antd";
 import Search from "antd/es/input/Search";
 import { useMutation } from "convex/react";
@@ -144,6 +145,8 @@ const SingleListing= ({tool, editTool, deleteTool}: {
     editTool: (tool: Tool)=> void,
     deleteTool: (toolId: Id<"tools">)=> void
 })=> {
+    const roleCTX= useRoleContext();
+
     return <div className="flex gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[6rem] h-[6rem] rounded-md overflow-hidden">
             <Image src={tool.image || "/placeholder.svg"} alt={tool.name + " image"} width={200} height={200} className="object-cover h-full" />
@@ -170,6 +173,24 @@ const SingleListing= ({tool, editTool, deleteTool}: {
             </div>
             <h6 className="font-jakarta text-[1.25rem] text-foreground font-semibold">{tool.name}</h6>
             <p className="font-sans w-full truncate text-foreground text-[.875rem]">{tool.desc}</p>
+            {
+                roleCTX.role === "admin" &&
+
+                <div className="flex gap-[.5rem] items-center font-sans font-semibold text-[.75rem] text-primary">
+                    <div className="flex gap-[.25rem] items-center">
+                        <UserOutlined />
+                        <span>Owner:</span>
+                    </div>
+                    <div className="">{tool.owner?.name || "Unknown user"}</div>
+                    {
+                        tool.owner?.isTrusted &&
+                        <div className="rounded-full bg-secondary flex gap-[.25rem] items-center px-[1rem] py-[.125rem] text-primary font-semibold text-[.75rem] w-max tracking-[0.038rem]">
+                            <SafetyOutlined />
+                            Trusted
+                        </div>
+                    }
+                </div>
+            }
         </div>
         <div className="w-max flex gap-[.5rem] h-full">
             <Button icon={<EditOutlined />} onClick={()=> editTool(tool)} >Edit</Button>
