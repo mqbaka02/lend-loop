@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as aggregates from "../aggregates.js";
 import type * as categories from "../categories.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as loans from "../loans.js";
@@ -23,6 +24,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  aggregates: typeof aggregates;
   categories: typeof categories;
   "lib/auth": typeof lib_auth;
   loans: typeof loans;
@@ -58,4 +60,7 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  returnedByBorrower: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"returnedByBorrower">;
+  returnedByOwner: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"returnedByOwner">;
+};

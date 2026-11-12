@@ -59,6 +59,7 @@ export default defineSchema({
         borrowerId: v.id("users"),
         startDate: v.number(), //UNIX time
         endDate: v.number(),
+        returnedAt: v.optional(v.number()),
         status: v.union(
             v.literal("pending"), //Request sent (created) and waiting for owner's approval
             v.literal("withdrawn"), //Request sent (created) but the sender gave up

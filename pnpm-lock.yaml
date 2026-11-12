@@ -17,6 +17,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^7.9.23
         version: 7.9.23(next@16.4.4(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@convex-dev/aggregate':
+        specifier: ^0.3.4
+        version: 0.3.4(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
       antd:
         specifier: ^6.6.8
         version: 6.6.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -26,6 +29,9 @@ importers:
       convex:
         specifier: ^1.49.0
         version: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      convex-helpers:
+        specifier: ^0.1.135
+        version: 0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
       dayjs:
         specifier: ^1.11.23
         version: 1.11.23
@@ -230,6 +236,17 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  '@convex-dev/aggregate@0.3.4':
+    resolution: {integrity: sha512-w60E4fLuysza8sBIQsLlYFxnzMB7ed8yqYpu/JfDhkUYvnnvW3CzLEf74zCwb/RfLrR6u5a/0pfvVtIp4XNIoA==}
+    peerDependencies:
+      convex: ^1.43.0
+
+  '@convex-dev/batch-worker@0.3.3':
+    resolution: {integrity: sha512-A9mOhSqITtdF6TR9bVZjTy+eES6/r/8ZvMWnNdKsATg8EOn5JMzDplibjaHCjQ57FjVeizbuKJ8GlnMs1RWF0g==}
+    peerDependencies:
+      convex: ^1.43.0
+      react: ^18.3.1 || ^19.0.0
 
   '@edge-runtime/primitives@6.0.0':
     resolution: {integrity: sha512-FqoxaBT+prPBHBwE1WXS1ocnu/VLTQyZ6NMUBAdbP7N2hsFTTxMC/jMu2D/8GAlMQfxeuppcPuCUk/HO3fpIvA==}
@@ -1649,6 +1666,53 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  convex-helpers@0.1.128:
+    resolution: {integrity: sha512-5n7uKsJrYnnybvuSAWgDQ9d5Avqk4CzFsJ22SXow4tHmVxSUH6qiJCeomWWxcLSfN9t9jpKIXNJiGJrjddS4ng==}
+    hasBin: true
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      convex: ^1.46.0
+      hono: ^4.0.5
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5 || ^6.0.0 || ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@standard-schema/spec':
+        optional: true
+      hono:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
+  convex-helpers@0.1.135:
+    resolution: {integrity: sha512-UX2f9j6pk90UyosPhnYQ1Q6nmUF/klUn/LZGp6BM8Ps5r+cZyY66ULhB1Vp3lUOY4EdjS3RLCKyaoTUg0BqhoA==}
+    hasBin: true
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      convex: ^1.46.0
+      hono: ^4.0.5
+      prettier: ^3.0.0
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5 || ^6.0.0 || ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@standard-schema/spec':
+        optional: true
+      hono:
+        optional: true
+      prettier:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
 
   convex-test@0.0.67:
     resolution: {integrity: sha512-UCAzL8pwo4akHs6dppAU3Rbo2Gzdp1KZp9kcsLGFBaL7JuXOfUZFxe16ywQjnyDZ+uQhawjTRx2j6Hd8FoBm5Q==}
@@ -3307,6 +3371,31 @@ snapshots:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
 
+  '@convex-dev/aggregate@0.3.4(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)':
+    dependencies:
+      '@convex-dev/batch-worker': 0.3.3(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
+      convex: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      convex-helpers: 0.1.128(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
+    transitivePeerDependencies:
+      - '@standard-schema/spec'
+      - hono
+      - prettier
+      - react
+      - typescript
+      - zod
+
+  '@convex-dev/batch-worker@0.3.3(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)':
+    dependencies:
+      convex: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      convex-helpers: 0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
+      react: 19.3.0
+    transitivePeerDependencies:
+      - '@standard-schema/spec'
+      - hono
+      - prettier
+      - typescript
+      - zod
+
   '@edge-runtime/primitives@6.0.0': {}
 
   '@edge-runtime/vm@5.0.0':
@@ -4637,6 +4726,23 @@ snapshots:
   convert-source-map@1.9.0: {}
 
   convert-source-map@2.0.0: {}
+
+  convex-helpers@0.1.128(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(react@19.3.0)(typescript@5.9.3)(zod@4.6.7):
+    dependencies:
+      convex: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+    optionalDependencies:
+      react: 19.3.0
+      typescript: 5.9.3
+      zod: 4.6.7
+
+  convex-helpers@0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7):
+    dependencies:
+      convex: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+    optionalDependencies:
+      prettier: 3.9.10
+      react: 19.3.0
+      typescript: 5.9.3
+      zod: 4.6.7
 
   convex-test@0.0.67(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)):
     dependencies:

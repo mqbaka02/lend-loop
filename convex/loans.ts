@@ -363,7 +363,8 @@ export const markAsReturned= mutation({
         if (theLoan.startDate> now) throw new ConvexError("The borrower hasn't still picked up that tool!"); //The borrow date is still in the future
 
         const result= await context.db.patch("loans", args.loanId, {
-            status: "returned"
+            status: "returned",
+            returnedAt: Date.now(),
         });
 
         //Refresh tool availability
@@ -376,7 +377,7 @@ export const markAsReturned= mutation({
 });
 
 
-export const seedLoans = internalMutation({
+export const seedLoans= internalMutation({
     args: {},
 
     handler: async (ctx) => {
@@ -526,5 +527,25 @@ export const seedLoans = internalMutation({
             returned: 10,
             tools: tools.length,
         };
+    },
+});
+
+//One time use, after updating the loans with the extra key `returnedAt`
+export const migrateToReturnedAt= internalMutation({
+    args: {},
+
+    handler: async (context, args)=> {
+        const allReturnedLoans= await context.db
+            .query("loans")
+            .withIndex("by_status_end_date", (q)=> q.eq("status", "returned"))
+            .collect();
+        
+        await Promise.all(
+            allReturnedLoans.map(loan=>
+                context.db.patch(loan._id, {
+                    returnedAt: loan.endDate
+                })
+            ),
+        );
     },
 });
