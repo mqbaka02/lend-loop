@@ -6,6 +6,11 @@ import { internalMutation } from "./_generated/server";
 import { faker } from "@faker-js/faker";
 import { paginationOptsValidator } from "convex/server";
 
+import { MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES } from "@/app/utils/constants";
+
+
 export const getPublicTools= query({
     args: {
         category: v.optional(v.id("categories")),
@@ -50,7 +55,7 @@ export const getPublicTools= query({
                     name: tool.name,
                     category: category?.name ?? "No category",
                     id: tool._id,
-                    image: tool.imageId,
+                    image: tool.imageId ? await context.storage.getUrl(tool.imageId) : null,
                 };
             })
         );
@@ -109,7 +114,7 @@ export const getTools= query({
                     } : null,
                     condition: tool.condition,
                     desc: tool.description,
-                    image: tool.imageId,
+                    image: tool.imageId ? await context.storage.getUrl(tool.imageId) : null,
                     date: tool._creationTime,
                     isAvailable: tool.isAvailable,
                     id: tool._id,
@@ -148,6 +153,10 @@ export const deleteTool= mutation({
         });
 
         const toolDeletionResult= await context.db.delete("tools", theTool._id);
+
+        //Delete the image if it exists
+        if (theTool.imageId) await context.storage.delete(theTool.imageId);
+
         return toolDeletionResult;
     },
 });
@@ -156,7 +165,7 @@ export const getToolsAdmin= query({
     args: {},
 
     handler: async (context, args)=> {
-        const user= requireAdmin(context);
+        const user= await requireAdmin(context);
 
         const allTools= await context.db.query("tools").withIndex("by_creation_time").order("desc").collect();
 
@@ -176,7 +185,7 @@ export const getToolsAdmin= query({
                 } : null,
                 condition: tool.condition,
                 desc: tool.description,
-                image: tool.imageId,
+                image: tool.imageId ? await context.storage.getUrl(tool.imageId) : null,
                 date: tool._creationTime,
                 isAvailable: tool.isAvailable,
                 id: tool._id,
@@ -222,7 +231,7 @@ export const getMyTools= query({
                 } : null,
                 condition: tool.condition,
                 desc: tool.description,
-                image: tool.imageId,
+                image: tool.imageId ? await context.storage.getUrl(tool.imageId) : null,
                 date: tool._creationTime,
                 isAvailable: tool.isAvailable,
                 id: tool._id,
@@ -238,6 +247,7 @@ export const createTool= mutation({
         name: v.string(),
         category: v.id("categories"),
         desc: v.optional(v.string()),
+        imageId: v.optional(v.id("_storage")),
         condition: v.union(
             v.literal("new"),
             v.literal("good"),
@@ -255,11 +265,14 @@ export const createTool= mutation({
         const category= await context.db.get("categories", args.category);
         if (!category) throw new ConvexError("Category not found!");
 
+        if (args.imageId) await assertValidImage(context, args.imageId);
+
         return await context.db.insert("tools", {
             ownerId: user._id, //We can trust this is the real id because it comes from Convex
             name,
             category: args.category,
             description: args.desc,
+            imageId: args.imageId,
             condition: args.condition,
             isAvailable: true,
         });
@@ -272,6 +285,7 @@ export const editTool= mutation({
         name: v.string(),
         category: v.id("categories"),
         desc: v.optional(v.string()),
+        imageId: v.optional(v.union(v.id("_storage"), v.null())),
         condition: v.union(
             v.literal("new"),
             v.literal("good"),
@@ -292,12 +306,35 @@ export const editTool= mutation({
         const theTool= await context.db.get("tools", args.id);
         if(!theTool) throw new ConvexError("Tool not found!");
 
-        return await context.db.patch("tools", theTool._id, {
+        //Only the owner or the admin can edit a tool
+        //For now in the frontend, only the owner can
+        if (user.role !== "admin" && user._id !== theTool.ownerId) {
+            throw new ConvexError("This tool doesn't belong to you!");
+        }
+
+        if (args.imageId) await assertValidImage(context, args.imageId);
+
+        const result= await context.db.patch("tools", theTool._id, {
             name,
             category: args.category,
             description: args.desc,
             condition: args.condition,
+
+            //The image
+            //remove it if the arg is null and don't change it if arg is undefined
+            ...(args.imageId !== undefined && { imageId: args.imageId ?? undefined }),
         });
+
+        //delete the unused image:
+        if (
+            args.imageId !== undefined
+            && theTool.imageId
+            && theTool.imageId !== args.imageId
+        ) {
+            await context.storage.delete(theTool.imageId);
+        }
+
+        return result;
     },
 });
 
@@ -407,3 +444,26 @@ await context.scheduler.runAfter(0, internal.tools.refreshAvailability, { toolId
 await context.scheduler.runAt(loan.startDate, internal.tools.refreshAvailability, { toolId });
 await context.scheduler.runAt(loan.endDate + 1, internal.tools.refreshAvailability, { toolId });
 */
+
+//IMAGES
+async function assertValidImage (context: MutationCtx, imageId: Id<"_storage">) {
+    const meta= await context.db.system.get("_storage", imageId);
+    if (!meta) throw new ConvexError("Uplodaded image not found!");
+
+    console.log("Content type: ", meta.contentType);
+
+    if (!meta.contentType || !(ALLOWED_IMAGE_TYPES.includes(meta.contentType)))
+        throw new ConvexError("Only JPG, PNG and WEBP images are allowed!");
+
+    if (meta.size > MAX_IMAGE_BYTES) throw new ConvexError("The image must be smaller than 5Mb!");
+};
+
+export const generateUploadUrl= mutation({
+    args: {},
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        return await context.storage.generateUploadUrl();
+    },
+});

@@ -138,7 +138,7 @@ export const getMyRequests= query({
                         categoryId: theTool.category,
                         id: theTool._id,
                         desc: theTool.description,
-                        image: theTool.imageId,
+                        image: theTool.imageId ? await context.storage.getUrl(theTool.imageId) : null,
                         date: theTool._creationTime
                     },
                     owner: theOwner? {
@@ -192,7 +192,7 @@ export const getRequestsAdmin= query({
                         category: theTool.category,
                         id: theTool._id,
                         desc: theTool.description,
-                        image: theTool.imageId,
+                        image: theTool.imageId ? await context.storage.getUrl(theTool.imageId) : null,
                         date: theTool._creationTime
                     },
                     owner: {

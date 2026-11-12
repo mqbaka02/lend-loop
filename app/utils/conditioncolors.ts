@@ -17,7 +17,7 @@ export const loanStatusTypeColors: Record<loanStatus, string>= {
 
 export const requestTextExplanation: Record<loanStatus, {title: string, p: string}>= {
     pending: {
-        title: "Request In Progress",
+        title: "Waiting for approval",
         p: "The request is still pending. You can edit the requested dates or withdraw the request as long as the owner doesn't approve it.",
     },
     withdrawn: {

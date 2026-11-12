@@ -16,7 +16,7 @@ type Tool = {
     } | null;
     condition: conditionType;
     desc: string | undefined;
-    image: Id<"_storage"> | undefined;
+    image: string|null;
     date: number;
     isAvailable: boolean;
     id: Id<"tools">

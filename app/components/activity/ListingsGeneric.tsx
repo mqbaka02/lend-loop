@@ -24,7 +24,7 @@ type listingType = {
     } | null;
     condition: "new" | "good" | "fair" | "poor";
     desc: string | undefined;
-    image: Id<"_storage"> | undefined;
+    image: string|null;
     date: number;
     isAvailable: boolean;
     id: Id<"tools">;

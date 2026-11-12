@@ -16,7 +16,11 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    remotePatterns: [new URL("https://placehold.co/**"), new URL("https://img.clerk.com/**")],
+    remotePatterns: [
+      new URL("https://placehold.co/**"),
+      new URL("https://img.clerk.com/**"),
+      new URL("https://**.convex.cloud/**")
+    ],
   }
 };
 
