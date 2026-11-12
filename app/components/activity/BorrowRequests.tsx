@@ -13,6 +13,7 @@ import { ConvexError } from "convex/values";
 import EditLoanModal from "../EditLoanModal";
 import { ListingSkeletons } from "./ListingsGeneric";
 import { TabChildrenContainer } from "./AbstractVirtualizedList";
+import { dateFmt } from "@/app/utils/dateFormat";
 
 
 export default function MyBorrowRequests() {
@@ -185,14 +186,14 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
                     <CalendarOutlined className="text-[1.3rem]" />
                     <div className="flex gap-0 flex-col">
                         <div className="font-sans text-foreground text-[.75rem]">Requested start date</div>
-                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.startDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{dateFmt.format(borrowRequest.startDate)}</div>
                     </div>
                 </div>
                 <div className="flex gap-[.5rem] p-[.5rem] items-center bg-secondary rounded-md grow">
                     <CalendarOutlined className="text-[1.3rem]" />
                     <div className="flex gap-0 flex-col">
                         <div className="font-sans text-foreground text-[.75rem]">Requested end date</div>
-                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{(new Date(borrowRequest.endDate)).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                        <div className="font-sans font-semibold text-foreground-1 text-[.75rem]">{dateFmt.format(borrowRequest.endDate)}</div>
                     </div>
                 </div>
             </div>

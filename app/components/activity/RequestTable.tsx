@@ -11,8 +11,9 @@ import Image from "next/image";
 import { SetStateAction, useMemo, useState } from "react";
 import ViewLoanModal from "./ViewLoanModal";
 import useRoleContext from "@/app/context/Role";
+import UserRender from "./UserRender";
+import { dateFmt } from "@/app/utils/dateFormat";
 
-const dateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 
 export default function RequestsTable ({ requests }: { requests?: incomingRequest[] }) {
@@ -210,41 +211,6 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
             scroll={{ x: 1020, y: 600 }} // x≈ sum of widths (48 + 240 + 260 + 140 + 220 + 160 = 1068)
         />
     </>);
-};
-
-const UserRender= ({name, username, isTrusted= false, imageUrl}: {
-    name?: string,
-    username?: string,
-    isTrusted?: boolean,
-    imageUrl?: string,
-})=> {
-
-    const [imgSrc, setImgSrc]= useState(imageUrl);
-
-    return <div className="flex gap-[.5rem] p-[.5rem] items-center rounded-md">
-        <div className="w-[2.25rem] h-[2.25rem] rounded-full shrink-0 overflow-hidden">
-            <Image
-                src={imgSrc || "/placeholder.svg"}
-                alt={"User image"}
-                width={72}
-                height={72}
-                className="object-cover h-full"
-                onError={()=> {setImgSrc("/hero_.jpg")}}
-            />
-        </div>
-        <div className="flex flex-col gap-0">
-            <div className="flex gap-[.5rem]">
-                <div className="font-sans font-semibold text-[.875rem] text-foreground-1 capitalize">{name || username || "Unknown user"}</div>
-                {
-                    isTrusted &&
-                    <div className="rounded-full bg-secondary flex min-w-[1.2rem] h-[1.2rem] gap-[.25rem] items-center justify-center text-primary font-semibold text-[.75rem] w-max tracking-[0.038rem]">
-                        <SafetyOutlined />
-                    </div>
-                }
-            </div>
-            <div className="font-sans font-semibold text-[.75rem] text-primary">@{username || "@user"}</div>
-        </div>
-    </div>;
 };
 
 const ToolRender= ({tool, category="No category"}: {tool: incomingRequestTool, category?: string})=> {

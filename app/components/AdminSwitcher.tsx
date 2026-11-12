@@ -17,13 +17,13 @@ export default function AdminSwitcher () {
             notifApi.notificationAPI["success"]({
                 title: "You are in Admin mode",
                 description: "You can now perform admin tasks.",
-                duration: 0
+                duration: 10
             });
         } else {
             notifApi.notificationAPI["success"]({
                 title: "You left Admin mode",
                 description: "You are now acting as a regular user.",
-                duration: 0
+                duration: 10
             });
         }
     };

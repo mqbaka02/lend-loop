@@ -7,6 +7,7 @@ import { SetStateAction, useState } from "react";
 import useRoleContext from "@/app/context/Role";
 import ListingsAdmin from "./ListingsAdmin";
 import BorrowRequestsAdmin from "./BorrowRequestsAdmin";
+import UsersAdmin from "./UsersAdmin";
 
 const styleFn: SegmentedProps['styles']= (info): GetProp<SegmentedProps, 'styles', 'Return'>=> {
     if (true) {
@@ -94,7 +95,7 @@ export function ActivityTabs({activeKey}: {activeKey: string}) {
         {
             key: '3',
             label: 'All Users',
-            children: <IncomingRequests />,
+            children: <UsersAdmin />,
         },
     ]
     : [
