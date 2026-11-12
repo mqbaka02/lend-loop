@@ -10,9 +10,11 @@
 
 import type * as aggregates from "../aggregates.js";
 import type * as categories from "../categories.js";
+import type * as functions from "../functions.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as loans from "../loans.js";
 import type * as messages from "../messages.js";
+import type * as migrations from "../migrations.js";
 import type * as seed from "../seed.js";
 import type * as tools from "../tools.js";
 import type * as users from "../users.js";
@@ -26,9 +28,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   aggregates: typeof aggregates;
   categories: typeof categories;
+  functions: typeof functions;
   "lib/auth": typeof lib_auth;
   loans: typeof loans;
   messages: typeof messages;
+  migrations: typeof migrations;
   seed: typeof seed;
   tools: typeof tools;
   users: typeof users;
@@ -63,4 +67,5 @@ export declare const internal: FilterApi<
 export declare const components: {
   returnedByBorrower: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"returnedByBorrower">;
   returnedByOwner: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"returnedByOwner">;
+  migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
 };

@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
+import { query } from "./_generated/server";
 import { getCurrentUser, requireAdmin } from "./lib/auth";
 import { internal } from "./_generated/api";
 import { faker } from "@faker-js/faker";
@@ -531,21 +532,21 @@ export const seedLoans= internalMutation({
 });
 
 //One time use, after updating the loans with the extra key `returnedAt`
-export const migrateToReturnedAt= internalMutation({
-    args: {},
+// export const migrateToReturnedAt= internalMutation({
+//     args: {},
 
-    handler: async (context, args)=> {
-        const allReturnedLoans= await context.db
-            .query("loans")
-            .withIndex("by_status_end_date", (q)=> q.eq("status", "returned"))
-            .collect();
+//     handler: async (context, args)=> {
+//         const allReturnedLoans= await context.db
+//             .query("loans")
+//             .withIndex("by_status_end_date", (q)=> q.eq("status", "returned"))
+//             .collect();
         
-        await Promise.all(
-            allReturnedLoans.map(loan=>
-                context.db.patch(loan._id, {
-                    returnedAt: loan.endDate
-                })
-            ),
-        );
-    },
-});
+//         await Promise.all(
+//             allReturnedLoans.map(loan=>
+//                 context.db.patch(loan._id, {
+//                     returnedAt: loan.endDate
+//                 })
+//             ),
+//         );
+//     },
+// });

@@ -20,6 +20,9 @@ importers:
       '@convex-dev/aggregate':
         specifier: ^0.3.4
         version: 0.3.4(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
+      '@convex-dev/migrations':
+        specifier: ^0.3.8
+        version: 0.3.8(convex-helpers@0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7))(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))
       antd:
         specifier: ^6.6.8
         version: 6.6.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -247,6 +250,12 @@ packages:
     peerDependencies:
       convex: ^1.43.0
       react: ^18.3.1 || ^19.0.0
+
+  '@convex-dev/migrations@0.3.8':
+    resolution: {integrity: sha512-+wI5pHQzvcLxBEMLl7yhClfaz6jXppI5RsP/+UOFl0fmCfnbYXMKNelr8u08KZAmCGPUkEjMb4teZsyYJH9sWQ==}
+    peerDependencies:
+      convex: ^1.42.0
+      convex-helpers: ^0.1.115
 
   '@edge-runtime/primitives@6.0.0':
     resolution: {integrity: sha512-FqoxaBT+prPBHBwE1WXS1ocnu/VLTQyZ6NMUBAdbP7N2hsFTTxMC/jMu2D/8GAlMQfxeuppcPuCUk/HO3fpIvA==}
@@ -3395,6 +3404,11 @@ snapshots:
       - prettier
       - typescript
       - zod
+
+  '@convex-dev/migrations@0.3.8(convex-helpers@0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7))(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))':
+    dependencies:
+      convex: 1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      convex-helpers: 0.1.135(convex@1.49.0(@clerk/react@6.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0))(prettier@3.9.10)(react@19.3.0)(typescript@5.9.3)(zod@4.6.7)
 
   '@edge-runtime/primitives@6.0.0': {}
 
