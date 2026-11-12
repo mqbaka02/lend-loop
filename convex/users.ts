@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUser, requireAdmin } from "./lib/auth";
+import { returnedByBorrower, returnedByOwner } from "./aggregates";
 
 /**
  * This will loook up for an signed in user's presence in the database and create it if he is not there yet
@@ -106,10 +107,50 @@ export const getUsersAdmin= query({
 
     handler: async (context, args)=> {
         //This is for admins only
-        const user= requireAdmin(context);
+        const user= await requireAdmin(context);
 
         const allUsers= await context.db.query("users").order("desc").collect();
 
-        return allUsers;
+        return await Promise.all(
+            allUsers.map(async (user)=> {
+                const [borrowedOnTime, lendAndReturned]= await Promise.all([
+                    returnedByBorrower.count(context, {
+                        bounds: {
+                            prefix: ["returned-on-time", user._id]
+                        },
+                    }),
+                    returnedByOwner.count(context, {
+                        bounds: {
+                            prefix: ["returned", user._id]
+                        },
+                    }),
+                ]);
+
+                return {
+                    ...user,
+                    borrowedOnTime,
+                    lendAndReturned,
+                };
+            }),
+        );
+    },
+});
+
+export const toggleUserTrustedAdmin= mutation({
+    args: {
+        userId: v.id("users"),
+    },
+
+    handler: async (context, args)=> {
+        const user= requireAdmin(context);
+        
+        const theUser= await context.db.get("users", args.userId);
+        if (!theUser) throw new ConvexError("This user doesn't exist!");
+
+        return await context.db.patch("users", theUser._id, {
+            //toggle value
+            isTrusted: !theUser.isTrusted,
+        });
+
     },
 });
