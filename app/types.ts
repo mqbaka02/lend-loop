@@ -50,6 +50,7 @@ type incomingRequestTool= {
     _creationTime: number,
     description?: string | undefined,
     imageId?: Id<"_storage"> | undefined,
+    image?: string | null,
     name: string,
     ownerId: Id<"users">,
     category: Id<"categories">,

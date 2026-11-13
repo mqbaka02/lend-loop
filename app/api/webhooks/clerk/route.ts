@@ -52,6 +52,15 @@ export async function POST(req: NextRequest) {
         //     imageUrl: user.image_url ?? undefined,
         //     clerkUpdatedAt: user.updated_at,
         // });
+
+        //Only use verified emails
+        const primaryEmail= user.email_addresses.find(
+            email=> email.id=== user.primary_email_address_id
+        );
+        const email= primaryEmail?.verification?.status=== "verified"
+            ? primaryEmail.email_address
+            : undefined;
+
         await convex.mutation(
             internal.users.syncFromClerk as unknown as FunctionReference<"mutation">,
                 {
@@ -60,6 +69,7 @@ export async function POST(req: NextRequest) {
                     username: user.username ?? undefined,
                     imageUrl: user.image_url ?? undefined,
                     clerkUpdatedAt: user.updated_at,
+                    email
                 }
         );
 

@@ -17,94 +17,6 @@ function doRangesIntersect(start1: number, end1: number, start2: number, end2: n
     return start1 <= end2 && start2 <= end1;
 }
 
-export const createLoanRequest= mutation({
-    args: {
-        startDate: v.number(),
-        endDate: v.number(),
-        toolId: v.id("tools"),
-    },
-
-    handler: async (context, args)=> {
-        const user= await getCurrentUser(context);
-
-        const theTool= await context.db.get("tools", args.toolId);
-
-        const now= Date.now();
-
-        if (!theTool) throw new ConvexError("This tool doesn't exist!");
-
-        const theOwner= theTool.ownerId;
-        if (theOwner=== user._id) throw new ConvexError("You can't borrow your own tool!");
-
-        if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
-
-        const allRelatedLoans= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", args.toolId)).collect();
-
-        if (allRelatedLoans.some(
-            loan => (
-                loan.status === "approved" &&
-                doRangesIntersect(loan.startDate, loan.endDate, args.startDate, args.endDate)
-            )
-        )){
-            throw new ConvexError("This tool is not available in this date range!")
-        }
-
-        return await context.db.insert("loans", {
-            borrowerId: user._id,
-            endDate: args.endDate,
-            startDate: args.startDate,
-            ownerId: theOwner,
-            status: "pending",
-            toolId: args.toolId,
-        });
-    },
-});
-
-export const editLoanRequest= mutation({
-    args: {
-        startDate: v.number(),
-        endDate: v.number(),
-        loanId: v.id("loans"),
-    },
-
-    handler: async (context, args)=> {
-        const user= await getCurrentUser(context);
-
-        const theLoan= await context.db.get("loans", args.loanId);
-        if (!theLoan) throw new ConvexError("This loan doesn't exist!");
-
-        const theTool= await context.db.get("tools", theLoan.toolId);
-        if (!theTool) throw new ConvexError("This tool doesn't exist!");
-
-        const now= Date.now();
-
-        const theOwner= theTool.ownerId;
-        if (theOwner=== user._id) throw new ConvexError("You can't borrow your own tool!");
-        if (theLoan.borrowerId!== user._id) throw new ConvexError("This loan is not yours!");
-        if (theLoan.status=== "approved") throw new ConvexError("This loan has already been approved!");
-        if (theLoan.status=== "returned") throw new ConvexError("This loan has already been returned!");
-
-        if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
-
-        const allRelatedLoans= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", theTool._id)).collect();
-
-        if (allRelatedLoans.some(
-            loan => (
-                loan.status === "approved" &&
-                doRangesIntersect(loan.startDate, loan.endDate, args.startDate, args.endDate)
-            )
-        )){
-            throw new ConvexError("This tool is not available in this date range!")
-        }
-
-        return await context.db.patch("loans", theLoan._id, {
-            endDate: args.endDate,
-            startDate: args.startDate,
-            status: "pending"
-        });
-    },
-});
-
 /**
  * List all the requests made by the current user
  */
@@ -155,6 +67,7 @@ export const getMyRequests= query({
         return enrichedLoans.filter(e=> e!==null);
     },
 });
+
 /**
  * List all the requests made by the current user
  */
@@ -236,7 +149,10 @@ export const getIncomingRequests= query({
                 const theCateg = await context.db.get("categories", theTool?.category);
                 return {
                     ...loan,
-                    tool: theTool,
+                    tool: {
+                        ...theTool,
+                        image: theTool.imageId ? await context.storage.getUrl(theTool.imageId) : null,
+                    },
                     borrower: theBorrower? {
                         clerkUpdatedAt: theBorrower.clerkUpdatedAt,
                         username: theBorrower.username,
@@ -258,6 +174,125 @@ export const getIncomingRequests= query({
         return enrichedLoans.filter(e=> e!==null);
     },
 });
+
+
+export const createLoanRequest= mutation({
+    args: {
+        startDate: v.number(),
+        endDate: v.number(),
+        toolId: v.id("tools"),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const theTool= await context.db.get("tools", args.toolId);
+
+        const now= Date.now();
+
+        if (!theTool) throw new ConvexError("This tool doesn't exist!");
+
+        const theOwnerId= theTool.ownerId;
+        if (theOwnerId=== user._id) throw new ConvexError("You can't borrow your own tool!");
+
+        if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
+
+        const allRelatedLoans= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", args.toolId)).collect();
+
+        if (allRelatedLoans.some(
+            loan => (
+                loan.status === "approved" &&
+                doRangesIntersect(loan.startDate, loan.endDate, args.startDate, args.endDate)
+            )
+        )){
+            throw new ConvexError("This tool is not available in this date range!")
+        }
+
+        const loanId= await context.db.insert("loans", {
+            borrowerId: user._id,
+            endDate: args.endDate,
+            startDate: args.startDate,
+            ownerId: theOwnerId,
+            status: "pending",
+            toolId: args.toolId,
+        });
+
+        //Send the notif immediatel after this
+        await context.scheduler.runAfter(
+            0,
+            internal.n8n.sendLoanEvent,
+            {
+                eventId: `${loanId}:requested`,
+                eventType: "loan_requested",
+                loanId,
+                recipientId: theOwnerId,
+            }
+        );
+
+        return loanId;
+    },
+});
+
+export const editLoanRequest= mutation({
+    args: {
+        startDate: v.number(),
+        endDate: v.number(),
+        loanId: v.id("loans"),
+    },
+
+    handler: async (context, args)=> {
+        const user= await getCurrentUser(context);
+
+        const theLoan= await context.db.get("loans", args.loanId);
+        if (!theLoan) throw new ConvexError("This loan doesn't exist!");
+
+        const theTool= await context.db.get("tools", theLoan.toolId);
+        if (!theTool) throw new ConvexError("This tool doesn't exist!");
+
+        const now= Date.now();
+
+        const theOwnerId= theTool.ownerId;
+        if (theOwnerId=== user._id) throw new ConvexError("You can't borrow your own tool!");
+        if (theLoan.borrowerId!== user._id) throw new ConvexError("This loan is not yours!");
+        if (theLoan.status=== "approved") throw new ConvexError("This loan has already been approved!");
+        if (theLoan.status=== "returned") throw new ConvexError("This loan has already been returned!");
+
+        if ((args.startDate>= args.endDate) || (args.startDate< now)) throw new ConvexError("The date range is invalid");
+
+        const allRelatedLoans= await context.db.query("loans").withIndex("by_tool", (q)=> q.eq("toolId", theTool._id)).collect();
+
+        if (allRelatedLoans.some(
+            loan => (
+                loan.status === "approved" &&
+                doRangesIntersect(loan.startDate, loan.endDate, args.startDate, args.endDate)
+            )
+        )){
+            throw new ConvexError("This tool is not available in this date range!")
+        }
+
+        await context.db.patch("loans", theLoan._id, {
+            endDate: args.endDate,
+            startDate: args.startDate,
+            status: "pending"
+        });
+
+        //Send the notif immediatel after this
+        //The edit and the create are two different events so we assign a different event id to the edit
+        await context.scheduler.runAfter(
+            0,
+            internal.n8n.sendLoanEvent,
+            {
+                eventId: `${theLoan._id}:requested:${now}`,
+                eventType: "loan_requested",
+                loanId: theLoan._id,
+                recipientId: theOwnerId,
+            }
+        );
+
+        return theLoan._id;
+    },
+});
+
 
 export const updateLoanStatus= mutation({
     args: {
@@ -302,6 +337,20 @@ export const updateLoanStatus= mutation({
         const result= await context.db.patch("loans", args.loanId, {
             status: newStatus,
         });
+
+        const now= Date.now();
+
+        //Send notification
+        await context.scheduler.runAfter(
+            0,
+            internal.n8n.sendLoanEvent,
+            {
+                eventId: `${theLoan._id}:${newStatus}:${now}`,
+                eventType: `loan_${newStatus}`,
+                loanId: theLoan._id,
+                recipientId: theLoan.borrowerId,
+            }
+        );
 
         //Refresh tool availability
         await context.scheduler.runAfter(0, internal.tools.refreshAvailability, { toolId: theTool._id });
@@ -368,6 +417,18 @@ export const markAsReturned= mutation({
             returnedAt: Date.now(),
         });
 
+        //Notification
+        await context.scheduler.runAfter(
+            0,
+            internal.n8n.sendLoanEvent,
+            {
+                eventId: `${theLoan._id}:returned:${Date.now()}`,
+                eventType: "loan_returned",
+                loanId: theLoan._id,
+                recipientId: theLoan.borrowerId
+            },
+        )
+
         //Refresh tool availability
         await context.scheduler.runAfter(0, internal.tools.refreshAvailability, { toolId: theTool._id });
         // await context.scheduler.runAt(theLoan.startDate, internal.tools.refreshAvailability, { toolId: theTool._id });
@@ -378,158 +439,158 @@ export const markAsReturned= mutation({
 });
 
 
-export const seedLoans= internalMutation({
-    args: {},
+// export const seedLoans= internalMutation({
+//     args: {},
 
-    handler: async (ctx) => {
-        const users = await ctx.db.query("users").collect();
-        const tools = await ctx.db.query("tools").collect();
-        const existingLoans = await ctx.db.query("loans").collect();
+//     handler: async (ctx) => {
+//         const users = await ctx.db.query("users").collect();
+//         const tools = await ctx.db.query("tools").collect();
+//         const existingLoans = await ctx.db.query("loans").collect();
 
-        if (users.length < 2) {
-            throw new Error("At least two users are required to seed loans.");
-        }
+//         if (users.length < 2) {
+//             throw new Error("At least two users are required to seed loans.");
+//         }
 
-        if (tools.length === 0) {
-            throw new Error("No tools found. Seed tools first.");
-        }
+//         if (tools.length === 0) {
+//             throw new Error("No tools found. Seed tools first.");
+//         }
 
-        const DAY = 24 * 60 * 60 * 1000;
-        const now = Date.now();
+//         const DAY = 24 * 60 * 60 * 1000;
+//         const now = Date.now();
 
-        // Always select a borrower who isn't the owner.
-        const pickBorrower = (ownerId: typeof users[number]["_id"]) => {
-            const eligibleUsers = users.filter(user => user._id !== ownerId);
-            return faker.helpers.arrayElement(eligibleUsers);
-        };
+//         // Always select a borrower who isn't the owner.
+//         const pickBorrower = (ownerId: typeof users[number]["_id"]) => {
+//             const eligibleUsers = users.filter(user => user._id !== ownerId);
+//             return faker.helpers.arrayElement(eligibleUsers);
+//         };
 
-        // Generate a future date range.
-        const futureRange = () => {
-            const startDate = now + faker.number.int({ min: 1, max: 60 }) * DAY;
-            const endDate = startDate + faker.number.int({ min: 1, max: 14 }) * DAY;
-            return { startDate, endDate };
-        };
+//         // Generate a future date range.
+//         const futureRange = () => {
+//             const startDate = now + faker.number.int({ min: 1, max: 60 }) * DAY;
+//             const endDate = startDate + faker.number.int({ min: 1, max: 14 }) * DAY;
+//             return { startDate, endDate };
+//         };
 
-        // Generate a past date range.
-        const pastRange = () => {
-            const endDate = now - faker.number.int({ min: 1, max: 60 }) * DAY;
-            const startDate = endDate - faker.number.int({ min: 1, max: 14 }) * DAY;
-            return { startDate, endDate };
-        };
+//         // Generate a past date range.
+//         const pastRange = () => {
+//             const endDate = now - faker.number.int({ min: 1, max: 60 }) * DAY;
+//             const startDate = endDate - faker.number.int({ min: 1, max: 14 }) * DAY;
+//             return { startDate, endDate };
+//         };
 
-        // Generate pending and declined loans.
-        const seedRandomLoans = async (
-            status: "pending" | "declined",
-            count: number
-        ) => {
-            for (let i = 0; i < count; i++) {
-                const tool = faker.helpers.arrayElement(tools);
-                const borrower = pickBorrower(tool.ownerId);
-                const { startDate, endDate } = futureRange();
+//         // Generate pending and declined loans.
+//         const seedRandomLoans = async (
+//             status: "pending" | "declined",
+//             count: number
+//         ) => {
+//             for (let i = 0; i < count; i++) {
+//                 const tool = faker.helpers.arrayElement(tools);
+//                 const borrower = pickBorrower(tool.ownerId);
+//                 const { startDate, endDate } = futureRange();
 
-                await ctx.db.insert("loans", {
-                    toolId: tool._id,
-                    ownerId: tool.ownerId,
-                    borrowerId: borrower._id,
-                    startDate,
-                    endDate,
-                    status,
-                });
-            }
-        };
+//                 await ctx.db.insert("loans", {
+//                     toolId: tool._id,
+//                     ownerId: tool.ownerId,
+//                     borrowerId: borrower._id,
+//                     startDate,
+//                     endDate,
+//                     status,
+//                 });
+//             }
+//         };
 
-        await seedRandomLoans("pending", 10);
-        await seedRandomLoans("declined", 10);
+//         await seedRandomLoans("pending", 10);
+//         await seedRandomLoans("declined", 10);
 
-        // Seed one approved loan per tool, unless one already exists.
-        const approvedToolIds = new Set(
-            existingLoans
-                .filter(loan => loan.status === "approved")
-                .map(loan => loan.toolId)
-        );
+//         // Seed one approved loan per tool, unless one already exists.
+//         const approvedToolIds = new Set(
+//             existingLoans
+//                 .filter(loan => loan.status === "approved")
+//                 .map(loan => loan.toolId)
+//         );
 
-        let approvedInserted = 0;
-        let approvedSkipped = 0;
+//         let approvedInserted = 0;
+//         let approvedSkipped = 0;
 
-        for (let i = 0; i < tools.length; i++) {
-            const tool = tools[i];
+//         for (let i = 0; i < tools.length; i++) {
+//             const tool = tools[i];
 
-            if (approvedToolIds.has(tool._id)) {
-                approvedSkipped++;
-                continue;
-            }
+//             if (approvedToolIds.has(tool._id)) {
+//                 approvedSkipped++;
+//                 continue;
+//             }
 
-            const borrower = pickBorrower(tool.ownerId);
+//             const borrower = pickBorrower(tool.ownerId);
 
-            let startDate: number;
-            let endDate: number;
+//             let startDate: number;
+//             let endDate: number;
 
-            // Alternate between active and upcoming loans.
-            if (i % 2 === 0) {
-                startDate = now - faker.number.int({ min: 1, max: 5 }) * DAY;
-                endDate = now + faker.number.int({ min: 1, max: 10 }) * DAY;
-            } else {
-                startDate = now + faker.number.int({ min: 2, max: 30 }) * DAY;
-                endDate = startDate + faker.number.int({ min: 1, max: 14 }) * DAY;
-            }
+//             // Alternate between active and upcoming loans.
+//             if (i % 2 === 0) {
+//                 startDate = now - faker.number.int({ min: 1, max: 5 }) * DAY;
+//                 endDate = now + faker.number.int({ min: 1, max: 10 }) * DAY;
+//             } else {
+//                 startDate = now + faker.number.int({ min: 2, max: 30 }) * DAY;
+//                 endDate = startDate + faker.number.int({ min: 1, max: 14 }) * DAY;
+//             }
 
-            await ctx.db.insert("loans", {
-                toolId: tool._id,
-                ownerId: tool.ownerId,
-                borrowerId: borrower._id,
-                startDate,
-                endDate,
-                status: "approved",
-            });
+//             await ctx.db.insert("loans", {
+//                 toolId: tool._id,
+//                 ownerId: tool.ownerId,
+//                 borrowerId: borrower._id,
+//                 startDate,
+//                 endDate,
+//                 status: "approved",
+//             });
 
-            approvedInserted++;
-        }
+//             approvedInserted++;
+//         }
 
-        // Seed 10 returned loans, all with dates in the past.
-        for (let i = 0; i < 10; i++) {
-            const tool = faker.helpers.arrayElement(tools);
-            const borrower = pickBorrower(tool.ownerId);
-            const { startDate, endDate } = pastRange();
+//         // Seed 10 returned loans, all with dates in the past.
+//         for (let i = 0; i < 10; i++) {
+//             const tool = faker.helpers.arrayElement(tools);
+//             const borrower = pickBorrower(tool.ownerId);
+//             const { startDate, endDate } = pastRange();
 
-            await ctx.db.insert("loans", {
-                toolId: tool._id,
-                ownerId: tool.ownerId,
-                borrowerId: borrower._id,
-                startDate,
-                endDate,
-                status: "returned",
-            });
-        }
+//             await ctx.db.insert("loans", {
+//                 toolId: tool._id,
+//                 ownerId: tool.ownerId,
+//                 borrowerId: borrower._id,
+//                 startDate,
+//                 endDate,
+//                 status: "returned",
+//             });
+//         }
 
-        // Recalculate availability based on the actual loan records.
-        for (const tool of tools) {
-            const relatedLoans = await ctx.db
-                .query("loans")
-                .withIndex("by_tool", q => q.eq("toolId", tool._id))
-                .collect();
+//         // Recalculate availability based on the actual loan records.
+//         for (const tool of tools) {
+//             const relatedLoans = await ctx.db
+//                 .query("loans")
+//                 .withIndex("by_tool", q => q.eq("toolId", tool._id))
+//                 .collect();
 
-            const isBorrowed = relatedLoans.some(
-                loan =>
-                    loan.status === "approved" &&
-                    loan.startDate <= now &&
-                    loan.endDate >= now
-            );
+//             const isBorrowed = relatedLoans.some(
+//                 loan =>
+//                     loan.status === "approved" &&
+//                     loan.startDate <= now &&
+//                     loan.endDate >= now
+//             );
 
-            await ctx.db.patch(tool._id, {
-                isAvailable: !isBorrowed,
-            });
-        }
+//             await ctx.db.patch(tool._id, {
+//                 isAvailable: !isBorrowed,
+//             });
+//         }
 
-        return {
-            pending: 10,
-            declined: 10,
-            approvedInserted,
-            approvedSkipped,
-            returned: 10,
-            tools: tools.length,
-        };
-    },
-});
+//         return {
+//             pending: 10,
+//             declined: 10,
+//             approvedInserted,
+//             approvedSkipped,
+//             returned: 10,
+//             tools: tools.length,
+//         };
+//     },
+// });
 
 //One time use, after updating the loans with the extra key `returnedAt`
 // export const migrateToReturnedAt= internalMutation({

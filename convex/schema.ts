@@ -15,6 +15,7 @@ export default defineSchema({
         clerkUpdatedAt: v.optional(v.number()),
         isTrusted: v.boolean(),
         username: v.optional(v.string()),
+        email: v.optional(v.string()),
         name: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
         role: v.union(
@@ -84,6 +85,12 @@ export default defineSchema({
             v.literal("pending"),
             v.literal("sent"),
             v.literal("failed"),
+        ),
+        //3 channels: email, mock and discord
+        channel: v.union(
+            v.literal("email"),
+            v.literal("discord"),
+            v.literal("mock"),
         ),
         createdAt: v.number(), //Date in UNIX time for the date where it's first attempted
         lastAttemptAt: v.optional(v.number()), //Date in UNIX time for the last attempt

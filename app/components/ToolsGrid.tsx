@@ -224,7 +224,7 @@ const ToolCardSkeleton = () => {
     </div>;
 };
 
-const ToolCardPublic = ({ tool }: { tool: {name: string, category: string, id: string, image?: string} }) => {
+const ToolCardPublic = ({ tool }: { tool: {name: string, category: string, id: string, image?: string|null} }) => {
     return <div className="bg-white rounded-md p-[1rem] flex flex-col gap-[.5rem] min-w-[20rem] max-w-[25rem] grow w-full">
         <div className="w-full relative">
             <Image src={tool.image ?? "/placeholder.svg"} alt={tool.name + " image"} width={200} height={150} className="w-full rounded-md" />

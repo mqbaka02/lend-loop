@@ -40,6 +40,7 @@ export const syncFromClerk = internalMutation({
         clerkId: v.string(),
         name: v.optional(v.string()),
         username: v.optional(v.string()),
+        email: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
         clerkUpdatedAt: v.number(),
     },
@@ -66,6 +67,7 @@ export const syncFromClerk = internalMutation({
                 username: args.username,
                 imageUrl: args.imageUrl,
                 clerkUpdatedAt: args.clerkUpdatedAt,
+                ...(args.email ? {email: args.email}: {}),
             });
 
             return existingUser._id;
@@ -77,6 +79,7 @@ export const syncFromClerk = internalMutation({
             username: args.username,
             imageUrl: args.imageUrl,
             clerkUpdatedAt: args.clerkUpdatedAt,
+            email: args.email,
             role: "user",
             isTrusted: false,
         });

@@ -215,7 +215,7 @@ export default function RequestsTable ({ requests }: { requests?: incomingReques
 
 const ToolRender= ({tool, category="No category"}: {tool: incomingRequestTool, category?: string})=> {
 
-    const [imgSrc, setImgSrc]= useState<string>(tool.imageId as string);
+    const [imgSrc, setImgSrc]= useState<string>(tool.image as string);
 
     return <div className="flex gap-[.5rem] p-[.5rem] items-start rounded-md">
         <div className="w-[4rem] h-[4rem] rounded-md shrink-0 overflow-hidden">

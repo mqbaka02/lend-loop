@@ -80,7 +80,7 @@ export default function ViewLoanModal ({isOpen, onClose, viewedLoan, rejectAppro
         <div className="flex flex-col gap-[1rem] py-[1.5rem]">
             <div className="flex flex-row gap-[1rem] rounded-md bg-light-blue p-[1rem] overflow-hidden">
                 <div className="w-[4rem] h-[4rem] rounded-md overflow-hidden shrink-0">
-                    <Image src={viewedLoan.tool?.imageId ?? "/placeholder.svg"} alt={viewedLoan.tool?.name||"Image_" + " image"} width={200} height={150} className="h-full rounded-md object-cover" />
+                    <Image src={viewedLoan.tool?.image ?? "/placeholder.svg"} alt={viewedLoan.tool?.name||"Image_" + " image"} width={200} height={150} className="h-full rounded-md object-cover" />
                 </div>
                 <div className="flex flex-col gap-[.25rem] grow-0 min-w-0">
                     <div className="rounded-full flex gap-[.25rem] items-center px-[1rem] py-[.25rem] text-primary font-semibold leading-[200%] text-[.75rem] w-max tracking-[0.038rem] capitalize" style={{background: conditionTypeColors[viewedLoan.tool?.condition||"good"]}}>

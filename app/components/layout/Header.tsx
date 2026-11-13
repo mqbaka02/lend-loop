@@ -81,9 +81,9 @@ function UserWidget () {
     return <div className="ml-auto flex gap-[.20rem] h-full">
         <Show when={"signed-in"}>
             <div className="flex items-center h-full gap-[1rem]">
-                <Badge dot>
+                {/* <Badge dot>
                     <BellOutlined className="w-[1.2rem]" style={{ fontSize: 24 }} />
-                </Badge>
+                </Badge> */}
                 <AdminSwitcher />
                 <div className="bg-white px-[.25rem] pr-[1.076rem] h-full rounded-full flex items-center gap-[.5rem] cursor-pointer" onClick={clickButton}>
                     <UserButton 

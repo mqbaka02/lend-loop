@@ -147,7 +147,7 @@ const UsersTable = ({users, toggleTrusted}: {
                 dataIndex: "loans",
                 width: 240,
                 render: (_: unknown, req: userType|undefined) =>
-                    <div className="w-full text-[1.5rem] font-bold text-green-500">{req?.lendAndReturned}</div>,
+                    <div className="w-full text-[1.5rem] text-center font-bold text-green-500">{req?.lendAndReturned}</div>,
             },
             {
                 title: <div className="flex gap-[.5rem]">
@@ -159,7 +159,7 @@ const UsersTable = ({users, toggleTrusted}: {
                 dataIndex: "borrows",
                 width: 240,
                 render: (_: unknown, req: userType|undefined) =>
-                    <div className="w-full text-[1.5rem] font-bold text-blue-500">{req?.borrowedOnTime}</div>,
+                    <div className="w-full text-[1.5rem] text-center font-bold text-blue-500">{req?.borrowedOnTime}</div>,
             },
             {
                 title: "Actions",

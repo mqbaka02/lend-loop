@@ -1,16 +1,5 @@
-import useEditedToolContext from "@/app/context/EditToolContext";
-import useRoleContext from "@/app/context/Role";
-import useNotificationContext from "@/app/context/useNotificationContext";
-import { Tool } from "@/app/types";
-import { conditionTypeColors } from "@/app/utils/conditioncolors";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { DeleteOutlined, EditOutlined, PlusCircleOutlined, SafetyOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Empty, Listy, Popconfirm, Skeleton } from "antd";
+import { Empty, Listy } from "antd";
 import Search from "antd/es/input/Search";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import Image from "next/image";
 import { Fragment } from "react/jsx-runtime";
 
 export default function AbstractVirtualizedList<T> ({texts, onSearchChange, listKey, theList, renderItem, extraElements, EmptyRender, skeletons}: {
