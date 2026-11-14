@@ -57,7 +57,7 @@ export const markNotificationAttempt= internalMutation({
 
     handler: async (context, args) => {
         const theLog = await context.db.get("logs", args.logId);
-        if (!theLog) throw new ConvexError("The notification log is not found!");
+        if (!theLog) throw new ConvexError("The log is not found!");
 
         //Don't resend the notification if it's already marked as sent!
         if (theLog.status=== "sent") return;
@@ -88,7 +88,7 @@ export const finishNotificationAttempt= internalMutation({
 
     handler: async (context, args) => {
         const theLog = await context.db.get("logs", args.logId);
-        if (!theLog) throw new ConvexError("The notification log is not found!");
+        if (!theLog) throw new ConvexError("The log is not found!");
 
         const now = Date.now();
 
@@ -98,5 +98,45 @@ export const finishNotificationAttempt= internalMutation({
                 ? { sentAt: now, failedAt: undefined, lastError: undefined }
                 : { failedAt: now, lastError: args.lastError ?? "Unknown error" }),
         });
+    },
+});
+
+export const createReminderLog= internalMutation({
+    args: {
+        loanId: v.id("loans"),
+        channel: channelValidator,
+        reminderDate: v.string(), // FORMAT (yyyyy-mm-dd)
+    },
+
+    handler: async (context, args)=> {
+        const idempotencyKey= `reminder:${args.loanId}:${args.reminderDate}:${args.channel}`;
+        //check if this log already exists
+        const existing= await context.db
+            .query("logs")
+            .withIndex("by_idempotency_key", (q)=> q.eq("idempotencyKey", idempotencyKey))
+            .unique();
+
+        if (existing){
+            if (existing.status!== "failed")
+                return {logId: existing._id, shouldSend: false};
+
+            await context.db.patch("logs", existing._id, {
+                status: "pending",
+                // lastError: undefined, //This would overwrite any possibe last error that was there
+            });
+            return {logId: existing._id, shouldSend: true};
+        }
+
+        const logId= await context.db.insert("logs", {
+            loanId: args.loanId,
+            type: "reminder",
+            channel: args.channel,
+            status: "pending",
+            createdAt: Date.now(),
+            attemptCount: 0,
+            idempotencyKey: idempotencyKey
+        });
+
+        return {logId, shouldSend: true};
     },
 });

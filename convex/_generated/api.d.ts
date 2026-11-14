@@ -18,6 +18,7 @@ import type * as logs from "../logs.js";
 import type * as messages from "../messages.js";
 import type * as migrations from "../migrations.js";
 import type * as n8n from "../n8n.js";
+import type * as reminders from "../reminders.js";
 import type * as seed from "../seed.js";
 import type * as tools from "../tools.js";
 import type * as users from "../users.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   migrations: typeof migrations;
   n8n: typeof n8n;
+  reminders: typeof reminders;
   seed: typeof seed;
   tools: typeof tools;
   users: typeof users;
