@@ -45,7 +45,7 @@ export default function AuthCheckedToolsList ({activeCategory}: {activeCategory:
 
 function PaginatedToolGrid<T>({results, status, loadMore, getKey, renderItem, pageSize= PAGE_SIZE}: PaginatedToolsGridProps<T>){
     return <div className="flex flex-col gap-[1rem]">
-            <div className="flex flex-wrap gap-[1.5rem]">
+            <div className="flex flex-wrap gap-[1.5rem] justify-center">
             {
                 status=== "LoadingFirstPage" ?
                 <ToolCardSkeletons />
