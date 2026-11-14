@@ -118,7 +118,7 @@ const SingleListing= ({tool, editTool, deleteTool}: {
 })=> {
     const roleCTX= useRoleContext();
 
-    return <div className="flex gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
+    return <div className="flex min-[47rem]:flex-row flex-col gap-[1rem] p-[1.5rem] bg-white rounded-xl w-full">
         <div className="w-[6rem] h-[6rem] rounded-md overflow-hidden">
             <Image src={tool.image || "/placeholder.svg"} alt={tool.name + " image"} width={200} height={200} className="object-cover h-full" />
         </div>

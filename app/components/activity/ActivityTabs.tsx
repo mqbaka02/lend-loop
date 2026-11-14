@@ -1,3 +1,5 @@
+"use client";
+
 import { GetProp, Segmented, SegmentedProps, Tabs, TabsProps } from "antd";
 import MyBorrowRequests from "./BorrowRequests";
 import IncomingRequests from "./IncomingRequests";
@@ -8,6 +10,7 @@ import useRoleContext from "@/app/context/Role";
 import ListingsAdmin from "./ListingsAdmin";
 import BorrowRequestsAdmin from "./BorrowRequestsAdmin";
 import UsersAdmin from "./UsersAdmin";
+import { useBreakpoint } from "@/app/hooks/useBreakpoint";
 
 const styleFn: SegmentedProps['styles']= (info): GetProp<SegmentedProps, 'styles', 'Return'>=> {
     if (true) {
@@ -26,11 +29,13 @@ const styleFn: SegmentedProps['styles']= (info): GetProp<SegmentedProps, 'styles
 export function SegmentedComponent({setActiveTabKey}: {setActiveTabKey: React.Dispatch<SetStateAction<string>>}) {
     const [activeValue, setActiveValue]= useState<string | number>(1);
 
+    const below512= useBreakpoint(512);
+
     const getOptionStyles= (value: number)=> {
         const isActive= activeValue=== value;
         return {
             labelClass: isActive 
-                ? "text-primary font-bold text-[.875rem] inline" 
+                ? "text-primary font-bold text-[.875rem] inline"
                 : "text-foreground-1 font-semibold text-[.875rem] inline",
             iconClass: isActive ? 'text-primary' : 'text-foreground-1' 
         };
@@ -72,6 +77,7 @@ export function SegmentedComponent({setActiveTabKey}: {setActiveTabKey: React.Di
             styles={styleFn}
             // {...segmentedSharedProps}
             options={options}
+            vertical={below512==="sm"}
         />
     );
 };
