@@ -22,7 +22,7 @@ export default function Home() {
 function Hero () {
   return <div className="w-full min-h-[35rem] flex items-center justify-center bg-[#faf8ff]">
     <Container>
-      <div className="w-full mx-auto my-auto flex gap-[2rem] min-[64rem]:flex-row flex-col h-full">
+      <div className="w-full mx-auto my-auto flex gap-[2rem] min-[64rem]:py-0 py-[3rem] min-[64rem]:flex-row flex-col h-full">
         <div className="flex-[61.8] w-full flex flex-col gap-[1rem]">
           <div className="rounded-full bg-secondary flex gap-[.25rem] items-center px-[1rem] py-[.25rem] text-primary font-semibold leading-[.875rem] text-[.75rem] w-max tracking-[0.038rem]">
             <div className="w-[.5rem] h-[.5rem] rounded-full bg-primary"></div>
@@ -64,13 +64,8 @@ function Hero () {
         </div>
         <div className="flex-[38.2] w-full flex flex-col gap-[1rem]">
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full relative rounded-xl overflow-hidden">
-              <Image src={"/hero_.jpg"} alt="Tools" width={480} height={360} className="w-full" />
-              {/* <div className="absolute top-0 bottom-0 right-0 left-0 z-[10] bg-gradient-to-b from-transparent to-black/80 flex items-end justify-center gap-[1.5rem] pb-[1.25rem]">
-                <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
-                <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
-                <SmallBadgeWithIcon icon={<CiOutlined />} text={"Zero fees"} />
-              </div> */}
+            <div className="w-full relative rounded-xl overflow-hidden min-[64rem]:h-auto h-[10rem]">
+              <Image src={"/hero_.jpg"} alt="Tools" width={480} height={360} className="w-full relative min-[64rem]:top-0 top-[-50%]" />
             </div>
           </div>
         </div>

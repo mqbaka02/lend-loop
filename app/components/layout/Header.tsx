@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRightOutlined, BellOutlined, UnlockFilled } from "@ant-design/icons";
+import { ArrowRightOutlined, MenuOutlined, UnlockFilled } from "@ant-design/icons";
 import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { Badge, Button } from "antd";
+import { Button } from "antd";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AdminSwitcher from "../AdminSwitcher";
@@ -16,13 +16,19 @@ export default function Header () {
             <Container>
                 <div className="w-[43rem] h-full flex gap-[1.5rem] w-full">
                     <Logo />
-                    <div className="w-full grow flex gap-[.25rem]">
-                        <NavLink active={pathName=== "/"} href={"/"}>Browse tools</NavLink>
-                        <Show when={"signed-in"}>
-                            <NavLink active={pathName=== "/myactivity"} href="/myactivity">My activity</NavLink>
-                        </Show>
+                    <div className="min-[49rem]:flex hidden gap-[1.5rem] w-full grow">
+                        <div className="w-full grow flex gap-[.25rem]">
+                            <NavLink active={pathName=== "/"} href={"/"}>Browse tools</NavLink>
+                            <Show when={"signed-in"}>
+                                <NavLink active={pathName=== "/myactivity"} href="/myactivity">My activity</NavLink>
+                            </Show>
+                        </div>
+                        <UserWidget />
                     </div>
-                    <UserWidget />
+                    <div className="ml-auto min-[49rem]:hidden block">
+                        <Button size="large" type="text" icon={<MenuOutlined className="text-[1.5rem]" />}>
+                        </Button>
+                    </div>
                 </div>
             </Container>
         </div>
@@ -93,11 +99,11 @@ function UserWidget () {
                         }
                         }}
                     />
-                    <div className="flex flex-col gap-0">
-                        <div className="leading-[1rem] text-[.75rem] font-semibold text-foreground-1 first-letter:uppercase">
+                    <div className="flex flex-col gap-0 max-w-[6rem]" title={user?.firstName && user.lastName ? user.firstName +" " + user.lastName : user?.username||undefined}>
+                        <div className="leading-[1rem] text-[.75rem] font-semibold text-foreground-1 first-letter:uppercase w-full overflow-hidden truncate">
                             {
                                 user?.firstName && user.lastName ? <>{user.firstName} {user.lastName}</> : <>{user?.username}</>
-                            }
+                            } sdoi sqdfmsjfslkdfj
                         </div>
                         <div className="leading-[1rem] text-[.75rem] text-primary">
                             @{user?.username}
