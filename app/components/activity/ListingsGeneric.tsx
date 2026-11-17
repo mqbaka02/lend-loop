@@ -142,7 +142,7 @@ const SingleListing= ({tool, editTool, deleteTool}: {
                     </div>
                 }
             </div>
-            <h6 className="font-jakarta text-[1.25rem] text-foreground font-semibold">{tool.name}</h6>
+            <h6 className="font-jakarta text-[1.25rem] text-foreground font-semibold text-balance">{tool.name}</h6>
             <p className="font-sans w-full truncate text-foreground text-[.875rem]">{tool.desc}</p>
             {
                 roleCTX.role === "admin" &&

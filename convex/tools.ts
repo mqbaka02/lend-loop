@@ -338,73 +338,74 @@ export const editTool= mutation({
     },
 });
 
-export const seedTools= internalMutation({
-  args: {},
-  handler: async (ctx)=> {
 
-    //Ditch this code if you don't care about repetitive tool names
-    // const existingTools= await ctx.db.query("tools").take(1);
+// export const seedTools= internalMutation({
+//   args: {},
+//   handler: async (ctx)=> {
 
-    // if (existingTools.length > 0) {
-    //   throw new ConvexError("Tools table is not empty. Aborting seed.");
-    // }
+//     //Ditch this code if you don't care about repetitive tool names
+//     // const existingTools= await ctx.db.query("tools").take(1);
 
-    const users= await ctx.db.query("users").collect();
-    const categories= await ctx.db.query("categories").collect();
+//     // if (existingTools.length > 0) {
+//     //   throw new ConvexError("Tools table is not empty. Aborting seed.");
+//     // }
 
-    if (users.length=== 0) {
-      throw new ConvexError("No users found. Sign in first.");
-    }
+//     const users= await ctx.db.query("users").collect();
+//     const categories= await ctx.db.query("categories").collect();
 
-    if (categories.length=== 0) {
-      throw new ConvexError("No categories found. Seed categories first.");
-    }
+//     if (users.length=== 0) {
+//       throw new ConvexError("No users found. Sign in first.");
+//     }
+
+//     if (categories.length=== 0) {
+//       throw new ConvexError("No categories found. Seed categories first.");
+//     }
 
 
-    const conditions= ["new", "good", "fair", "poor"] as const;
+//     const conditions= ["new", "good", "fair", "poor"] as const;
 
-    for (let i= 0; i< 50; i++) {
-      const owner= faker.helpers.arrayElement(users);
-      const category= faker.helpers.arrayElement(categories);
+//     for (let i= 0; i< 50; i++) {
+//       const owner= faker.helpers.arrayElement(users);
+//       const category= faker.helpers.arrayElement(categories);
 
-      await ctx.db.insert("tools", {
-        ownerId: owner._id,
-        name: faker.commerce.product(),
-        category: category._id,
-        condition: faker.helpers.arrayElement(conditions),
-        description: faker.lorem.sentences({ min: 1, max: 2 }),
-        isAvailable: true,
-      });
-    }
+//       await ctx.db.insert("tools", {
+//         ownerId: owner._id,
+//         name: faker.commerce.product(),
+//         category: category._id,
+//         condition: faker.helpers.arrayElement(conditions),
+//         description: faker.lorem.sentences({ min: 1, max: 2 }),
+//         isAvailable: true,
+//       });
+//     }
 
-    return {
-      inserted: 50,
-      owners: users.length,
-      categories: categories.length,
-    };
-  },
-});
+//     return {
+//       inserted: 50,
+//       owners: users.length,
+//       categories: categories.length,
+//     };
+//   },
+// });
 
 
 /**
  * This is a migration function that I need to update all the existing data in the tools table because
  * I added isAvailable key and need to make it non-optional
  */
-export const migrateFromNoIsAvailableToIsAvailable= internalMutation({
-    args: {},
+// export const migrateFromNoIsAvailableToIsAvailable= internalMutation({
+//     args: {},
 
-    handler: async (context, args)=> {
-        const allTools= await context.db.query("tools").collect();
+//     handler: async (context, args)=> {
+//         const allTools= await context.db.query("tools").collect();
 
-        await Promise.all(
-            allTools.map(tool =>
-                context.db.patch(tool._id, {
-                    isAvailable: true,
-                })
-            )
-        );
-    },
-});
+//         await Promise.all(
+//             allTools.map(tool =>
+//                 context.db.patch(tool._id, {
+//                     isAvailable: true,
+//                 })
+//             )
+//         );
+//     },
+// });
 
 /**
  * This function is for refreshing the availability of each tool,
