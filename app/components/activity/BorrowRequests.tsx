@@ -142,8 +142,8 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
     editThisLoan: (loan: BorrowRequest)=> void,
 })=> {
     const [imgSrc, setImgSrc]= useState(borrowRequest.owner?.imageUrl);
-    return <div className="flex gap-[1.5rem] p-[1.5rem] bg-white rounded-xl w-full">
-        <div className="w-[16rem] h-[16rem] rounded-md overflow-hidden shrink-0 relative">
+    return <div className="flex flex-col min-[66rem]:flex-row gap-[1.5rem] min-[40rem]:p-[1.5rem] p-[.6rem] bg-white rounded-xl w-full">
+        <div className="max-w-full w-[16rem] h-[16rem] rounded-md overflow-hidden shrink-0 relative">
             <Image src={borrowRequest.tool.image || "/placeholder.svg"} alt={borrowRequest.tool.name + " image"} width={256} height={256} className="object-cover h-full" />
             <div className="absolute top-[1rem] left-[1rem]">
                 {
@@ -181,7 +181,7 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
                     <div className="font-sans font-semibold text-[.75rem] text-primary">@{borrowRequest.owner?.username || borrowRequest.tool.owner?.username || "user"}</div>
                 </div>
             </div>
-            <div className="flex gap-[1rem] w-full">
+            <div className="flex flex-col min-[38rem]:flex-row gap-[1rem] w-full">
                 <div className="flex gap-[.5rem] p-[.5rem] items-center bg-light-blue rounded-md grow">
                     <CalendarOutlined className="text-[1.3rem]" />
                     <div className="flex gap-0 flex-col">
@@ -198,7 +198,7 @@ const SingleBorrowRequest= ({borrowRequest, withdrawLoan, editThisLoan}: {
                 </div>
             </div>
         </div>
-        <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] w-[16rem] shrink-0">
+        <div className="p-[1rem] bg-light-blue rounded-md flex flex-col gap-[.5rem] min-[66rem]:w-[16rem] shrink-0 w-full">
             <div className="text-[.75rem] font-semibold font-sans text-foreground-1">{requestTextExplanation[borrowRequest.status].title}</div>
             <div className="text-[.875rem] text-foreground font-light">{requestTextExplanation[borrowRequest.status].p}</div>
             <Button
