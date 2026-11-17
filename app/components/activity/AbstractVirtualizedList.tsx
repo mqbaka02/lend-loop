@@ -2,6 +2,7 @@ import { useBreakpoint } from "@/app/hooks/useBreakpoint";
 import { Empty, Listy } from "antd";
 import Search from "antd/es/input/Search";
 import { Fragment } from "react/jsx-runtime";
+import TitleAndSearch from "./ActivityTabTitleAndSearch";
 
 export default function AbstractVirtualizedList<T> ({texts, onSearchChange, listKey, theList, renderItem, extraElements, EmptyRender, skeletons}: {
     texts: {title: string, searchPlaceholder: string},
@@ -15,20 +16,11 @@ export default function AbstractVirtualizedList<T> ({texts, onSearchChange, list
 }) {
     const below1024= useBreakpoint(1024);
     return <TabChildrenContainer>
-        <div className="flex min-[40rem]:flex-row min-[40rem]:gap-0 gap-[1rem] flex-col">
-            <div className="flex flex-col gap-[.25rem] grow">
-                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
-                    {texts.title}
-                </h3>
-            </div>
-            <div className="flex items-start">
-                <Search
-                    placeholder={texts.searchPlaceholder}
-                    size="large"
-                    onChange={onSearchChange}
-                />
-            </div>
-        </div>
+        <TitleAndSearch
+            title={texts.title}
+            placeholder={texts.searchPlaceholder}
+            onSearchChange={onSearchChange}
+        />
         {
             extraElements&& extraElements.map((El, index)=> <Fragment key={index}>{El}</Fragment>)
         }

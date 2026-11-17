@@ -24,6 +24,7 @@ export default function Page() {
     const {role}= useRoleContext();
 
     const router = useRouter();
+    
     useEffect(() => {
         if (isLoaded && !isSignedIn) {
             router.replace("/");

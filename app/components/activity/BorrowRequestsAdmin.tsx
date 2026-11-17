@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import RequestsTable from "./RequestTable";
 import { useMemo, useState } from "react";
 import { TabChildrenContainer } from "./AbstractVirtualizedList";
+import TitleAndSearch from "./ActivityTabTitleAndSearch";
 
 export default function BorrowRequestsAdmin () {
 
@@ -25,22 +26,12 @@ export default function BorrowRequestsAdmin () {
     };
 
     return <TabChildrenContainer>
-        <div className="flex">
-            <div className="flex flex-col gap-[.25rem] grow">
-                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
-                    Incoming requests for my tools
-                </h3>
-            </div>
-            <div className="flex items-start">
-                <Search
-                    placeholder="Filter the requests"
-                    size="large"
-                    value={searchValue}
-                    onChange={onSearchChange}
-                />
-            </div>
-        </div>
-        <div className="flex flex-col gap-[1rem] w-full">
+        <TitleAndSearch
+            title={"Incoming requests for my tools"}
+            placeholder={"Filter the requests"}
+            onSearchChange={onSearchChange}
+        />
+        <div className="flex flex-col gap-[1rem] w-full custom-table">
             <RequestsTable requests={filteredRequests} />
         </div>
     </TabChildrenContainer>;

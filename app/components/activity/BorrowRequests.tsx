@@ -14,6 +14,7 @@ import EditLoanModal from "../EditLoanModal";
 import { ListingSkeletons } from "./ListingsGeneric";
 import { TabChildrenContainer } from "./AbstractVirtualizedList";
 import { dateFmt } from "@/app/utils/dateFormat";
+import TitleAndSearch from "./ActivityTabTitleAndSearch";
 
 
 export default function MyBorrowRequests() {
@@ -84,21 +85,11 @@ export default function MyBorrowRequests() {
     };
 
     return <TabChildrenContainer>
-        <div className="flex">
-            <div className="flex flex-col gap-[.25rem] grow">
-                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
-                    My borrow requests
-                </h3>
-            </div>
-            <div className="flex items-start">
-                <Search
-                    placeholder="Filter my requests"
-                    size="large"
-                    value={searchValue}
-                    onChange={onSearchChange}
-                />
-            </div>
-        </div>
+        <TitleAndSearch
+            title={"My borrow requests"}
+            placeholder={"Filter my requests"}
+            onSearchChange={onSearchChange}
+        />
         <EditLoanModal
             open={loanEditModalOpen}
             close={()=> setLoanEditModalOpen(false)}

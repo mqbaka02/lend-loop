@@ -1,4 +1,4 @@
-import { CloseCircleOutlined, LogoutOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, LoginOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Show, SignInButton, SignOutButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "antd";
 import Image from "next/image";
@@ -120,16 +120,36 @@ const MobileMenu= ({shown, setShown, pathName}: {
                         <div className="w-[10rem] h-[10rem] rounded-full overflow-hidden">
                             <Image src={user?.imageUrl || "/hero_.jpg"} alt="rer" width={300} height={300} className="object-cover h-full" />
                         </div>
+                        <div className="flex flex-col items-center">
+                            <div className="text-white text-[1.2rem]">
+                                {
+                                    user?.firstName && user.lastName ? <>{user.firstName} {user.lastName}</> : <>{user?.username}</>
+                                }
+                            </div>
+                            <div className="text-white/50">@{user?.username}</div>
+                        </div>
                         <AdminSwitcher mobile />
-                        <SignOutButton>
-                            <Button
-                                danger
-                                size="large"
-                                icon={<LogoutOutlined />}
-                            >
-                                Log Out
-                            </Button>
-                        </SignOutButton>
+                        <Show when={"signed-in"}>
+                            <SignOutButton>
+                                <Button
+                                    danger
+                                    size="large"
+                                    icon={<LogoutOutlined />}
+                                >
+                                    Sign Out
+                                </Button>
+                            </SignOutButton>
+                        </Show>
+                        <Show when={"signed-out"}>
+                            <SignInButton>
+                                <Button
+                                    size="large"
+                                    icon={<LoginOutlined />}
+                                >
+                                    Sign In
+                                </Button>
+                            </SignInButton>
+                        </Show>
                     </div>
                 </div>
             </Container>

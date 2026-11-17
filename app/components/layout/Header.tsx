@@ -13,6 +13,10 @@ export default function Header () {
     const pathName= usePathname();
     const [mobileMenushown, setMobileMenuShown]= useState<boolean>(false);
 
+    const showMobileMenu= ()=> {
+        setMobileMenuShown(true);
+    };
+
     return <div className="flex flex-col gap-0 w-full shadow-md sticky top-0 z-[999]">
         <div className="h-[5rem] w-full bg-background py-[1.25rem] flex items-center">
             <Container>
@@ -32,7 +36,7 @@ export default function Header () {
                             size="large"
                             type="text"
                             icon={<MenuOutlined className="text-[1.5rem]" />}
-                            onClick={()=> {setMobileMenuShown(true)}}
+                            onClick={showMobileMenu}
                         >
                         </Button>
                     </div>

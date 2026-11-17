@@ -9,6 +9,7 @@ import { TabChildrenContainer } from "./AbstractVirtualizedList";
 import UserRender from "./UserRender";
 import useNotificationContext from "@/app/context/useNotificationContext";
 import { ConvexError } from "convex/values";
+import TitleAndSearch from "./ActivityTabTitleAndSearch";
 
 
 type userType = {
@@ -86,22 +87,12 @@ export default function UsersAdmin() {
     };
 
     return <TabChildrenContainer>
-        <div className="flex">
-            <div className="flex flex-col gap-[.25rem] grow">
-                <h3 className="font-jakarta text-foreground-1 text-[1.25rem] font-semibold grow ">
-                    Incoming requests for my tools
-                </h3>
-            </div>
-            <div className="flex items-start">
-                <Search
-                    placeholder="Filter the requests"
-                    size="large"
-                    value={searchValue}
-                    onChange={onSearchChange}
-                />
-            </div>
-        </div>
-        <div className="flex flex-col gap-[1rem] w-full">
+        <TitleAndSearch
+            title={"Incoming requests for my tools"}
+            placeholder={"Filter the requests"}
+            onSearchChange={onSearchChange}
+        />
+        <div className="flex flex-col gap-[1rem] w-full custom-table">
             {/* <RequestsTable requests={filteredRequests} /> */}
             <UsersTable users={filteredUsers} toggleTrusted={toggleTrusted} />
         </div>
@@ -177,6 +168,7 @@ const UsersTable = ({users, toggleTrusted}: {
         virtual
         pagination={false}
         scroll={{ x: 1020, y: 600 }}
+        className="custom-table"
     />
 };
 

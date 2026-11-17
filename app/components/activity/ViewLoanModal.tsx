@@ -97,7 +97,7 @@ export default function ViewLoanModal ({isOpen, onClose, viewedLoan, rejectAppro
                 </div>
             </div>
 
-            <div className="flex gap-[1rem] w-full">
+            <div className="flex flex-col min-[38rem]:flex-row gap-[1rem] w-full">
                 <div className="flex gap-[.5rem] p-[.5rem] items-center bg-light-blue rounded-md grow">
                     <CalendarOutlined className="text-[1.3rem]" />
                     <div className="flex gap-0 flex-col">
