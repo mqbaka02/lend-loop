@@ -2,7 +2,7 @@
 
 A full-stack tool-lending platform that allows users to share tools, request loans for specific periods, and manage borrowing and lending activities.
 
-LendLoop was built using Next.js, Clerk, Convex and n8n, with automated notifications through email, Discord and a mock notification channel.
+Built using Next.js, Clerk, Convex and n8n, with automated notifications through email, Discord and a mock notification channel.
 
 ## Table of Contents
 
@@ -55,7 +55,7 @@ It also integrates n8n to automate notifications and daily overdue-loan reminder
 - View all registered users.
 - View all loan records.
 - Remove any tool listing.
-- Mark users as trusted or untrusted.
+- Mark/unmark users as trusted.
 - Evaluate user trust using lending and borrowing history metrics.
 
 ### Automated notifications
@@ -84,7 +84,7 @@ A separate scheduled workflow checks for overdue loans every day and sends remin
 | Next.js 16 | Frontend and application framework |
 | React 19 | User interface |
 | TypeScript | Static typing |
-| Ant Design | UI components |
+| Ant Design 6 | UI components |
 | Tailwind CSS | Styling |
 | Clerk | Authentication and user management |
 | Convex | Database, backend functions and real-time data |
@@ -117,7 +117,7 @@ Acts as the application's backend and source of truth for application data.
 It handles:
 
 - Database operations.
-- User and role management.
+- User and role management (keeps track of all existing users and their roles).
 - Tool listings.
 - Loan requests and status transitions.
 - Availability calculations.
@@ -143,7 +143,7 @@ Handles external notification delivery and scheduled overdue-loan reminders.
 
 ### Overdue reminder flow
 
-1. An n8n Schedule Trigger executes every day at 09:00.
+1. An n8n Schedule Trigger executes every day at 09:00 (this can be changed right in the n8n workflow).
 2. n8n calls the Convex HTTP endpoint that retrieves overdue approved loans.
 3. Convex creates or retrieves idempotent reminder logs for each loan and channel.
 4. n8n processes the returned notification channels.
@@ -151,7 +151,7 @@ Handles external notification delivery and scheduled overdue-loan reminders.
 6. n8n reports the outcome to Convex.
 7. Convex updates the reminder logs.
 
-All scheduled times use the `Indian/Antananarivo` timezone.
+All scheduled times use the `Indian/Antananarivo` timezone (my timezone, but it can be changed to whatever timezone as needed).
 
 ---
 
@@ -159,7 +159,7 @@ All scheduled times use the `Indian/Antananarivo` timezone.
 
 ### Prerequisites
 
-Before running the project, install:
+Those are needed for running the project:
 
 - Node.js (a compatible version for the project dependencies).
 - pnpm.
@@ -168,12 +168,12 @@ Before running the project, install:
 - A Convex account.
 - An n8n instance for notification workflows.
 
-Docker and Docker Compose are recommended for running n8n locally.
+Docker and Docker Compose are recommended if running n8n locally.
 
 ### 1. Clone the repository
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/mqbaka02/lend-loop
 cd lend-loop
 ```
 
@@ -206,6 +206,11 @@ Initialize or connect the project to a Convex deployment:
 ```bash
 pnpm exec convex dev
 ```
+or
+
+```bash
+npx convex dev
+```
 
 Follow the CLI instructions to select or create a deployment.
 
@@ -215,6 +220,11 @@ Deploy the backend functions:
 
 ```bash
 pnpm exec convex dev
+```
+or
+
+```bash
+npx convex dev
 ```
 
 For production deployments, use:
@@ -230,7 +240,7 @@ The frontend must use the Convex deployment URL corresponding to the selected en
 In a separate terminal:
 
 ```bash
-pnpm dev
+pnpm run dev
 ```
 
 The application should be available at:
@@ -256,6 +266,7 @@ export default nextConfig;
 ```
 
 Replace the example address with the development machine's actual IP address.
+Without this, the app will not work if accessed from another devide with a local network.
 
 ---
 
@@ -269,23 +280,27 @@ The following variables must be configured according to the services being used.
 |---|---|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key used by the frontend. |
 | `CLERK_SECRET_KEY` | Clerk secret key used by the server-side application. |
-| `NEXT_PUBLIC_CONVEX_URL` | URL of the Convex deployment used by the frontend. |
-| `CLERK_WEBHOOK_SECRET` | Secret used to verify incoming Clerk webhook events. |
-| `N8N_WEBHOOK_URL` | Public production webhook URL of the n8n loan notification workflow. |
-| `N8N_HMAC_SECRET` | Shared secret used to sign and verify Convex-to-n8n webhook requests. |
-| `N8N_CALLBACK_SECRET` | Shared secret used to authenticate n8n callbacks to Convex. |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex cloud URL (retrievable in you application dashboard, settings section in convex). |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | Convex HTTP actions URL (retrievable in you application dashboard, settings section in convex). |
+| `CLERK_WEBHOOK_SIGNING_SECRET` | Secret used to verify incoming Clerk webhook events, Clerk provides this after creating a webhoook. |
+| `CLERK_FRONTEND_API_URL` | URL provided by Clerk after creating a Convex integration. |
+| `CONVEX_WEBHOOK_DEPLOY_KEY` | Your Convex Deploy key. |
+<!-- | `N8N_HMAC_SECRET` | Shared secret used to sign and verify Convex-to-n8n webhook requests. |
+| `N8N_CALLBACK_SECRET` | Shared secret used to authenticate n8n callbacks to Convex. | -->
+<!-- | `N8N_WEBHOOK_URL` | Public production webhook URL of the n8n loan notification workflow. | -->
 
 The exact Clerk webhook secret variable name and any additional variables must match the implementation in the repository.
 
 ### Convex environment variables
 
-Configure the following in the Convex Dashboard:
+Configure the following in the Convex Dashboard (under `Settings>Environment Variables`):
 
 | Variable | Description |
 |---|---|
+| `CLERK_FRONTEND_API_URL` | Clerk's API URL, same as the one in you `.env.local`. |
 | `N8N_WEBHOOK_URL` | Public n8n loan notification webhook URL. |
-| `N8N_HMAC_SECRET` | Secret used to sign outgoing webhook requests. |
-| `N8N_CALLBACK_SECRET` | Secret used to authenticate incoming n8n callbacks. |
+| `N8N_HMAC_SECRET` | Secret used to sign outgoing webhook requests. I created mine using `openssl rand -hex 32`. |
+| `N8N_CALLBACK_SECRET` | Secret used to authenticate incoming n8n callbacks. Also created with `openssl rand -hex 32` |
 
 If the implementation also reads Clerk webhook configuration or other values from Convex, configure those as required by the backend code.
 
@@ -300,7 +315,7 @@ When running n8n through Docker Compose, configure:
 | `N8N_WEBHOOK_URL` | Public base URL used to generate webhook URLs. |
 | `N8N_EDITOR_BASE_URL` | Public URL of the n8n editor. |
 | `N8N_PROXY_HOPS` | Number of reverse-proxy hops. Use `1` when running behind a single proxy. |
-| `N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS` | Enforces secure permissions on the n8n settings file. |
+| `N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS` | Enforces secure permissions on the n8n settings file. Set it to `true` |
 
 The n8n instance also requires credentials for:
 
@@ -342,10 +357,9 @@ Clerk is responsible for authentication, while Convex stores application-specifi
 ### Convex
 
 1. Create a Convex project.
-2. Link the repository to the deployment.
-3. Configure the environment variables.
-4. Deploy the schema and backend functions.
-5. Verify that the frontend uses the correct deployment URL.
+2. Configure the environment variables.
+3. Deploy the schema and backend functions.
+4. Verify that the frontend uses the correct deployment URL.
 
 Convex provides both the application backend and HTTP endpoints used by n8n.
 
@@ -355,15 +369,15 @@ The application uses Convex HTTP Actions for external integrations.
 
 The project uses two workflows:
 
-- `LendLoop - Loan Notifications`
-- The scheduled overdue-loan reminder workflow.
+- The Loan Notifications
+- The scheduled overdue-loan reminder workflow
 
 Import the exported workflow JSON files into an n8n instance.
 
 After importing:
 
 1. Configure the Gmail SMTP credential.
-2. Configure the Discord webhook.
+2. Configure the Discord webhook (The current workflow just sends a message in a Discord channel).
 3. Configure the HTTP Request credentials used to authenticate callbacks to Convex.
 4. Configure the HMAC credential used to verify incoming loan events.
 5. Verify the Convex HTTP Actions URLs.
@@ -452,7 +466,7 @@ Loans without a verified borrower email address are handled gracefully by the em
 - Convex stores application roles and trust information.
 - Authorization is enforced inside Convex functions, not only in the frontend.
 - Administrative operations require an administrator role.
-- Users cannot modify listings or loans belonging to other users unless explicitly authorized by the backend rules.
+- Users cannot modify listings or loans belonging to other users unless explicitly authorized by the backend rules (which only occur when they are an admin).
 
 ### Webhook security
 
@@ -487,38 +501,6 @@ This prevents unauthenticated clients from updating notification logs through th
 
 ---
 
-## Testing
-
-Run the automated test suite:
-
-```bash
-pnpm test
-```
-
-Run the production build:
-
-```bash
-pnpm build
-```
-
-The build output is generated in the `.next/` directory.
-
-For local development:
-
-```bash
-pnpm dev
-```
-
-For a local production-mode test:
-
-```bash
-pnpm build
-pnpm start
-```
-
-The production server uses the generated build rather than the development server.
-
----
 
 ## Production Deployment
 
@@ -576,7 +558,7 @@ The n8n workflows should be version-controlled through their exported JSON files
 
 ### Additional production considerations
 
-Before operating the platform with real users, consider:
+Before operating the platform with real users, consider (hypothetical since this is just a take-home assignement):
 
 - Database backups and recovery procedures.
 - Monitoring and alerting for failed workflows.
@@ -596,7 +578,7 @@ The main project directories are organized as follows:
 ```text
 lend-loop/
 ├── app/                 # Next.js application routes and layouts
-├── components/          # Reusable UI components
+    └── components/      # Reusable UI components
 ├── convex/              # Convex schema, queries, mutations and actions
 ├── public/              # Static assets
 ├── ...                  # Configuration and project files
@@ -617,7 +599,3 @@ n8n/
 ```
 
 ---
-
-## License
-
-Specify the applicable license here if the project is intended to be distributed under an open-source license.
